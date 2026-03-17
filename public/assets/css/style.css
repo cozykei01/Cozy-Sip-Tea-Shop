@@ -1,0 +1,13 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --cozy-green: #004225; /* Dark Forest Green */
+    --cozy-sage: #F1F8F5;  /* Soft Sage Background */
+    --cozy-text: #2D3E33;
+    --cozy-white: #ffffff;
+    --cozy-border: #E0E0E0;
+}
