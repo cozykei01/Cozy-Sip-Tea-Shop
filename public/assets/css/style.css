@@ -9,5 +9,16 @@
     --cozy-sage: #F1F8F5;  /* Soft Sage Background */
     --cozy-text: #2D3E33;
     --cozy-white: #ffffff;
-    --cozy-border: #E0E0E0;
+    --cozy-border: #d6e0cc25;
+    --text-dark: #333;
+    --bg-light: #f4f7f6;
+    --primary-green: #064420;
+    --text-white: #ffffff;
+    --bg-light: #fdfdfd;
 }
+
+.main-layout {
+    display: flex;
+    min-height: 100vh;
+}
+

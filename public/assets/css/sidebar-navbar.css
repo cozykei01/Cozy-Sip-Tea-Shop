@@ -1,0 +1,228 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+:root {
+    --primary-green: #064420;
+    --text-white: #ffffff;
+    --bg-light: #fdfdfd;
+}
+
+.main-layout {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* Sidebar width ကို အသေထားပြီး content ကို ကျန်တဲ့ space အပြည့်ယူခိုင်းတာပါ */
+.sidebar {
+    width: 250px;
+    min-width: 250px;
+    /* sidebar ကျုံ့မသွားအောင် */
+    background-color: var(--primary-green);
+    color: var(--text-white);
+    padding: 20px;
+}
+
+.main-content {
+    flex-grow: 1;
+    /* လက်ကျန် space အကုန်ယူမယ် */
+    background-color: var(--bg-light);
+    display: flex;
+    flex-direction: column;
+}
+
+.navbar {
+    width: 100%;
+    /* Navbar ကို content area ရဲ့ width အပြည့်ယူစေမယ် */
+    height: 60px;
+    background: white;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0 30px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* Sidebar Styles */
+.sidebar {
+    width: 250px;
+    background-color: var(--primary-green);
+    color: var(--text-white);
+    padding: 20px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 40px;
+}
+
+/* sidebar-navbar.css */
+
+.side-nav .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+
+    /* Box တစ်ခုလုံးအတွက် padding ပေးခြင်း */
+    padding: 14px 20px;
+    border-radius: 10px;
+    margin: 5px 0;
+
+    /* Transition ကို element တစ်ခုလုံးစာ (all) အတွက် ပေးထားပါတယ် */
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+
+    /* Mouse တင်ရင် cursor ပြောင်းမယ် */
+    cursor: pointer;
+    position: relative;
+}
+
+/* Hover လုပ်တဲ့အခါ Box (div/li) တစ်ခုလုံး ပြောင်းလဲမှု */
+.side-nav .nav-item:hover {
+    /* Background တစ်ခုလုံး အရောင်ရင့်သွားမယ် */
+    background-color: rgba(255, 255, 255, 0.2);
+
+    /* စာသားနဲ့ icon အရောင်ကို အဖြူလင်းလင်း ပြောင်းမယ် */
+    color: #ffffff;
+
+    /* Box လေးက အနည်းငယ် ကြွတက်လာသလို effect (Shadow) */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+    /* ညာဘက်ကို ၈ pixel ခန့် တိုးထွက်သွားမယ် */
+    transform: translateX(8px);
+}
+
+/* Active ဖြစ်နေတဲ့ item အတွက် (ဥပမာ- Home မှာ ရောက်နေရင်) */
+.side-nav .nav-item.active {
+    background-color: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    font-weight: bold;
+}
+
+/* Icon အတွက် သီးသန့် transition */
+.side-nav .nav-item i {
+    font-size: 1.1rem;
+    transition: transform 0.3s ease;
+}
+
+.side-nav .nav-item:hover i {
+    /* Mouse တင်ရင် Icon လေး လည်သွားမယ် (သို့) ကြီးလာမယ် */
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* Navbar Styles */
+.main-content {
+    flex: 1;
+    background-color: var(--bg-light);
+}
+
+.navbar {
+    height: 60px;
+    background: white;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0 30px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
+
+.notification {
+    position: relative;
+    font-size: 1.2rem;
+    color: #555;
+    cursor: pointer;
+}
+
+.notification .dot {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 8px;
+    height: 8px;
+    background: #ff4d4d;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+/* Profile Dropdown */
+.user-profile {
+    position: relative;
+    cursor: pointer;
+}
+
+.profile-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #ddd;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 55px;
+    right: 0;
+    width: 200px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    display: none;
+    /* Hidden by default */
+    z-index: 1000;
+}
+
+.dropdown-menu.show {
+    display: block;
+}
+
+.user-info h4 {
+    font-size: 0.95rem;
+    color: #333;
+}
+
+.user-info p {
+    font-size: 0.8rem;
+    color: #888;
+    margin-bottom: 10px;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid #eee;
+    margin: 10px 0;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: #555;
+    font-size: 0.9rem;
+    padding: 10px 0;
+    transition: 0.2s;
+}
+
+.dropdown-item:hover {
+    color: var(--primary-green);
+}
+
+.dropdown-item.logout {
+    color: #ff4d4d;
+}
