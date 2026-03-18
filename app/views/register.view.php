@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <title>Register Page</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../../public/assets/css/style.css">
-    <link rel="stylesheet" href="../../public/assets/css/register.view.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/register.view.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 
@@ -60,7 +60,7 @@
         </div>
 
     </div>
-    <script src="../../public/assets/js/register.view.js"></script>
+    <script src="assets/js/register.view.js"></script>
 </body>
 
 </html>

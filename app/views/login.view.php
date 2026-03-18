@@ -6,8 +6,8 @@
     <title>Login Page</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="stylesheet" href="../../public/assets/css/style.css">
-    <link rel="stylesheet" href="../../public/assets/css/login.view.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/login.view.css">
 </head>
 
 <body class="login-page">
@@ -54,7 +54,7 @@
 
     </div>
 
-    <script src="../../public/assets/js/login.view.js"></script>
+    <script src="assets/js/login.view.js"></script>
 </body>
 
 </html>
