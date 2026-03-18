@@ -106,4 +106,15 @@ class User {
         
         return false;
     }
+
+    /**
+     * Get user details by ID
+     */
+    public function getUserById($userId) {
+        $query = "SELECT * FROM " . $this->table_name . " WHERE user_id = :user_id LIMIT 1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":user_id", $userId);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 }

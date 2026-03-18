@@ -76,4 +76,18 @@ class Exchange {
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return $result ? $result['point_balance'] : 0;
     }
+
+    /**
+     * Get points transaction history for a user
+     */
+    public function getExchangesByUser($userId) {
+        $stmt = $this->db->prepare("SELECT e.*, p.product_name 
+                                    FROM exchanges e 
+                                    JOIN exchange_products ep ON e.exchange_product_id = ep.exchange_product_id
+                                    JOIN products p ON ep.product_id = p.product_id
+                                    WHERE e.user_id = ? 
+                                    ORDER BY e.exchange_date DESC");
+        $stmt->execute([$userId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

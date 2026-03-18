@@ -22,9 +22,9 @@
                     <i class="fa-solid fa-bell"></i>
                     <span class="noti-badge">3</span>
                 </button>
-                <div class="profile-container" style="position: relative;">
-                    <button class="profile-btn" id="profileDropdownBtn" style="background:none; border:none; padding:0; cursor:pointer;">
-                        <div class="profile-img">
+                <div class="nav-profile-container">
+                    <button class="profile-btn" id="profileDropdownBtn">
+                        <div class="nav-profile-img">
                             <img src="assets/image/default_avatar.png" alt="Profile">
                         </div>
                     </button>
@@ -36,7 +36,7 @@
                             <span class="user-email"><?php echo htmlspecialchars($_SESSION['user_email'] ?? ''); ?></span>
                         </div>
                         <ul class="dropdown-menu">
-                            <li><a href="#"><i class="fa-regular fa-user"></i> My Profile</a></li>
+                            <li><a href="index.php?page=profile"><i class="fa-regular fa-user"></i> My Profile</a></li>
                             <li class="logout-item"><a href="index.php?page=logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a></li>
                         </ul>
                     </div>

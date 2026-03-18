@@ -61,4 +61,12 @@ class Order {
             return false;
         }
     }
+    /**
+     * Get order history for a user
+     */
+    public function getOrdersByUser($userId) {
+        $stmt = $this->db->prepare("SELECT * FROM orders WHERE user_id = ? ORDER BY order_date DESC");
+        $stmt->execute([$userId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

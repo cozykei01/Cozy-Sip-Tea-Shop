@@ -129,4 +129,11 @@ switch ($page) {
         $controller = new ExchangeController($db);
         $controller->process();
         break;
+    case 'profile':
+        require_once '../app/controllers/ProfileController.php';
+        $database = new Database();
+        $db = $database->getConnection();
+        $controller = new ProfileController($db);
+        $controller->index();
+        break;
 }
