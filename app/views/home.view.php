@@ -32,8 +32,26 @@
                     <i class="fa-solid fa-bell"></i>
                     <span class="noti-badge">3</span>
                 </button>
-                <div class="profile-img">
-                    <img src="https://ui-avatars.com/api/?name=User&background=004225&color=fff&rounded=true&bold=true" alt="Profile">
+                <div class="profile-container" style="position: relative;">
+                    <button class="profile-btn" id="profileDropdownBtn" style="background:none; border:none; padding:0; cursor:pointer;">
+                        <div class="profile-img">
+                            <img src="https://ui-avatars.com/api/?name=User&background=004225&color=fff&rounded=true&bold=true" alt="Profile">
+                        </div>
+                    </button>
+                    
+                    <!-- Profile Dropdown -->
+                    <div class="profile-dropdown" id="profileDropdown">
+                        <div class="dropdown-header">
+                            <span class="user-name">User</span>
+                            <span class="user-email">user@cozysip.com</span>
+                        </div>
+                        <ul class="dropdown-menu">
+                            <li><a href="#"><i class="fa-regular fa-user"></i> My Profile</a></li>
+                            <li><a href="#"><i class="fa-solid fa-box"></i> My Orders</a></li>
+                            <li><a href="#"><i class="fa-solid fa-gear"></i> Settings</a></li>
+                            <li class="logout-item"><a href="/index.php?page=login"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
@@ -46,90 +64,41 @@
             <span class="hero-subtitle">Premium Tea Collection</span>
             <h1>Sip the Serenity,<br>Taste the Tradition</h1>
             <p>Elevate your everyday with our hand-picked, premium tea collection. Experience the perfect blend of taste and tranquility in every cup.</p>
-            <div class="hero-buttons">
-                <button class="btn btn-primary">Explore Menu <i class="fa-solid fa-arrow-right"></i></button>
-                <button class="btn btn-outline">Our Story</button>
-            </div>
         </div>
     </section>
 
-    <!-- Product Card Section -->
-    <section class="products-section">
-        <div class="section-header">
-            <h2>Our Signature Teas</h2>
-            <p>Discover our most beloved blends crafted for pure relaxation</p>
+
+    <!-- Floating Cart Icon -->
+    <div class="floating-cart" id="floatingCart">
+        <div class="cart-icon-wrapper">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span class="cart-count" id="cartCount">0</span>
         </div>
-        <div class="products-grid">
-            <!-- Product 1 -->
-            <div class="product-card">
-                <div class="product-img-wrapper">
-                    <img src="https://images.unsplash.com/photo-1597481499750-3e6b22637e12?auto=format&fit=crop&q=80&w=500" alt="Matcha Green Tea" class="product-img">
-                    <span class="badge">Bestseller</span>
-                    <button class="wishlist-btn"><i class="fa-regular fa-heart"></i></button>
-                </div>
-                <div class="product-info">
-                    <div class="product-category">Green Tea</div>
-                    <h3 class="product-title">Premium Matcha</h3>
-                    <p class="product-desc">Ceremonial grade matcha from Uji, Japan with a smooth, umami-rich flavor profile.</p>
-                    <div class="product-footer">
-                        <span class="product-price">$18.00</span>
-                        <button class="add-to-cart" aria-label="Add to cart"><i class="fa-solid fa-cart-plus"></i></button>
-                    </div>
-                </div>
-            </div>
+        <span class="cart-label">Order</span>
+    </div>
 
-            <!-- Product 2 -->
-            <div class="product-card">
-                <div class="product-img-wrapper">
-                    <img src="https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&q=80&w=500" alt="Earl Grey Tea" class="product-img">
-                    <button class="wishlist-btn"><i class="fa-regular fa-heart"></i></button>
-                </div>
-                <div class="product-info">
-                    <div class="product-category">Black Tea</div>
-                    <h3 class="product-title">Royal Earl Grey</h3>
-                    <p class="product-desc">Classic black tea infused with cold-pressed bergamot oil for a refreshing citrus lift.</p>
-                    <div class="product-footer">
-                        <span class="product-price">$14.50</span>
-                        <button class="add-to-cart" aria-label="Add to cart"><i class="fa-solid fa-cart-plus"></i></button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Product 3 -->
-            <div class="product-card">
-                <div class="product-img-wrapper">
-                    <img src="https://images.unsplash.com/photo-1627449272828-86bc25bf9293?auto=format&fit=crop&q=80&w=500" alt="Chamomile Tea" class="product-img">
-                    <button class="wishlist-btn"><i class="fa-regular fa-heart"></i></button>
-                </div>
-                <div class="product-info">
-                    <div class="product-category">Herbal Tea</div>
-                    <h3 class="product-title">Calming Chamomile</h3>
-                    <p class="product-desc">Pure organic Egyptian chamomile flowers for a peaceful evening wind-down.</p>
-                    <div class="product-footer">
-                        <span class="product-price">$12.00</span>
-                        <button class="add-to-cart" aria-label="Add to cart"><i class="fa-solid fa-cart-plus"></i></button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Product 4 -->
-            <div class="product-card">
-                <div class="product-img-wrapper">
-                    <img src="https://images.unsplash.com/photo-1594631252845-29fc4cdc8e01?auto=format&fit=crop&q=80&w=500" alt="Oolong Tea" class="product-img">
-                    <button class="wishlist-btn"><i class="fa-regular fa-heart"></i></button>
-                </div>
-                <div class="product-info">
-                    <div class="product-category">Oolong Tea</div>
-                    <h3 class="product-title">Mountain Oolong</h3>
-                    <p class="product-desc">Lightly roasted oolong with floral notes and a sweet, lingering finish.</p>
-                    <div class="product-footer">
-                        <span class="product-price">$16.50</span>
-                        <button class="add-to-cart" aria-label="Add to cart"><i class="fa-solid fa-cart-plus"></i></button>
-                    </div>
-                </div>
+    <!-- Cart Modal -->
+    <div class="cart-modal-overlay" id="cartModalOverlay"></div>
+    <div class="cart-modal" id="cartModal">
+        <div class="cart-modal-header">
+            <h3>Your Order</h3>
+            <button class="close-modal" id="closeCartModal"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="cart-modal-body" id="cartItemsContainer">
+            <!-- Cart Items will be injected here by JS -->
+            <div class="empty-cart-message">
+                <i class="fa-solid fa-basket-shopping"></i>
+                <p>Your cart is empty.</p>
             </div>
         </div>
-    </section>
+        <div class="cart-modal-footer">
+            <div class="cart-total">
+                <span>Total:</span>
+                <span id="cartTotalPrice">$0.00</span>
+            </div>
+            <button class="checkout-btn">Proceed to Checkout</button>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="footer">
@@ -176,5 +145,7 @@
             <p>&copy; 2024 Cozy Sip Tea Shop. All rights reserved.</p>
         </div>
     </footer>
+
+    <script src="assets/js/home.view.js"></script>
 </body>
 </html>
