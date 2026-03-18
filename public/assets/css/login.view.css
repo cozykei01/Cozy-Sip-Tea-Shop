@@ -77,6 +77,8 @@
     border-radius: 0.75rem;
     background-color: #fcfdfc;
     outline: none;
+    font-family: sans-serif !important;
+    letter-spacing: normal !important;
 }
 
 .toggle-password { position: absolute; right: 0.9375rem; cursor: pointer; color: #999; }

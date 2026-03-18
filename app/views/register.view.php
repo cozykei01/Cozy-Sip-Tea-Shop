@@ -20,7 +20,7 @@
                 <p class="info-text">Join Cozy Sip today and elevate your wellness with the perfect tea.</p>
                 <div class="login-redirect">
                     <p>Already have an account?</p>
-                   <a href="login.view.php" class="login-btn-outline">Login</a>
+                   <a href="index.php?page=login" class="login-btn-outline">Login</a>
                 </div>
             </div>
         </div>
@@ -28,6 +28,29 @@
         <div class="register-form-side">
             <form action="index.php?page=register_process" method="POST" class="auth-form">
                 <h1 class="form-heading">Create Account</h1>
+
+                <?php 
+                if (isset($_SESSION['errors'])): ?>
+                    <div class="error-messages" style="background: #fee2e2; border: 1px solid #ef4444; color: #b91c1c; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 1rem; font-size: 0.875rem;">
+                        <?php foreach ($_SESSION['errors'] as $error): ?>
+                            <p><i class="fa-solid fa-circle-exclamation"></i> <?php echo $error; ?></p>
+                        <?php endforeach; ?>
+                        <?php unset($_SESSION['errors']); ?>
+                    </div>
+                <?php endif; ?>
+
+                <?php if (isset($_SESSION['success'])): ?>
+                    <div class="success-message" id="successMsg" style="background: #dcfce7; border: 1px solid #22c55e; color: #15803d; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 1rem; font-size: 0.875rem;">
+                        <p><i class="fa-solid fa-circle-check"></i> <?php echo $_SESSION['success']; ?></p>
+                        <p style="font-size: 0.75rem; margin-top: 0.25rem;">Redirecting to home in 3 seconds...</p>
+                        <?php unset($_SESSION['success']); ?>
+                    </div>
+                    <script>
+                        setTimeout(function() {
+                            window.location.href = "index.php?page=home";
+                        }, 3000);
+                    </script>
+                <?php endif; ?>
 
                 <div class="input-group">
                     <label>Name</label>
@@ -42,7 +65,7 @@
                 <div class="input-group">
                     <label>Password</label>
                     <div class="password-wrapper">
-                        <input type="password" name="password" id="password" placeholder="••••••••" required>
+                        <input type="password" name="password" id="password" placeholder="Password" required>
                         <i class="fa-solid fa-eye-slash toggle-password" onclick="togglePassword('password', this)"></i>
                     </div>
                 </div>
@@ -50,7 +73,7 @@
                 <div class="input-group">
                     <label>Confirm Password</label>
                     <div class="password-wrapper">
-                        <input type="password" name="confirm_password" id="confirm_password" placeholder="••••••••" required>
+                        <input type="password" name="confirm_password" id="confirm_password" placeholder="Confirm Password" required>
                         <i class="fa-solid fa-eye-slash toggle-password" onclick="togglePassword('confirm_password', this)"></i>
                     </div>
                 </div>

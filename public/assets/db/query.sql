@@ -9,6 +9,9 @@ CREATE TABLE users (
     point_balance INT DEFAULT 0
 );
 
+ALTER TABLE users ADD COLUMN password VARCHAR(255) NOT NULL;
+ALTER TABLE users ADD COLUMN profile_image VARCHAR(255) DEFAULT NULL;
+
 -- 2. Product Categories Table =========================================================================================
 CREATE TABLE product_categories (
     product_category_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -52,6 +55,40 @@ CREATE TABLE products (
     event_status BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (category_id) REFERENCES product_categories(product_category_id) ON DELETE SET NULL
 );
+
+INSERT INTO products (category_id, product_name, quantity, price, event_price, earned_point_value, event_status) VALUES
+-- 1. Basic Coffee 
+(1, 'Americano', 100, 12000.00, 10000.00, 120, TRUE),
+(1, 'Cappuccino', 80, 16000.00, NULL, 160, FALSE),
+(1, 'Macchiato', 60, 15000.00, NULL, 150, FALSE),
+(1, 'Espresso', 100, 12000.00, NULL, 120, FALSE),
+(1, 'Latte', 90, 18000.00, 15000.00, 180, TRUE),
+
+-- 2. Cold Coffee 
+(2, 'Iced Americano', 100, 14000.00, NULL, 140, FALSE),
+(2, 'Iced Latte', 80, 19000.00, NULL, 190, FALSE),
+(2, 'Iced Mocha', 70, 21000.00, 18000.00, 210, TRUE),
+(2, 'Cold Brew', 50, 18000.00, NULL, 180, FALSE),
+(2, 'Nitro Cold Brew', 40, 22000.00, NULL, 220, FALSE),
+
+-- 3. Tea & Non-Coffee 
+(3, 'Green Tea', 100, 13000.00, NULL, 130, FALSE),
+(3, 'Hot Chocolate', 80, 16000.00, 14000.00, 160, TRUE),
+(3, 'Iced Tea', 90, 14000.00, NULL, 140, FALSE),
+
+-- 4. Specialty Drinks 
+(4, 'Caramel Macchiato', 60, 21000.00, NULL, 210, FALSE),
+(4, 'Vanilla Latte', 70, 20000.00, NULL, 200, FALSE),
+(4, 'Hazelnut Mocha', 60, 22000.00, 19000.00, 220, TRUE),
+(4, 'Chai Latte', 50, 19000.00, NULL, 190, FALSE),
+(4, 'Matcha Latte', 80, 20000.00, NULL, 200, FALSE),
+
+-- 5. Bakery & Snacks 
+(5, 'Croissants', 40, 14000.00, 12000.00, 140, TRUE),
+(5, 'Muffins (Blueberry, Chocolate, Plain)', 60, 13000.00, NULL, 130, FALSE),
+(5, 'Scones', 30, 15000.00, NULL, 150, FALSE),
+(5, 'Cookies (Chocolate, Oatmeal, Sugar)', 100, 10000.00, 8000.00, 100, TRUE),
+(5, 'Bagels (Cream Cheese or Butter)', 50, 12000.00, NULL, 120, FALSE);
 
 -- 6. Orders Table =========================================================================================
 CREATE TABLE orders (

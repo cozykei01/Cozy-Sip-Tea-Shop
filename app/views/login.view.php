@@ -18,9 +18,9 @@
             <div class="info-content">
                 <h2 class="info-title">New Here?</h2>
                 <p class="info-text">Sign up and discover a great amount of new opportunities!</p>
-                <div class="register-redirect">
+                <div class="register-redirectရ">
                     <p>Don't have an account?</p>
-                    <a href="register.view.php" class="register-btn-outline">Sign Up</a>
+                    <a href="index.php?page=register" class="register-btn-outline">Sign Up</a>
                 </div>
             </div>
         </div>
