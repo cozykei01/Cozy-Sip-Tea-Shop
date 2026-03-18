@@ -1,4 +1,4 @@
--- 1. Users Table
+-- 1. Users Table =========================================================================================
 CREATE TABLE users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
     user_name VARCHAR(100) NOT NULL,
@@ -9,13 +9,20 @@ CREATE TABLE users (
     point_balance INT DEFAULT 0
 );
 
--- 2. Product Categories Table
+-- 2. Product Categories Table =========================================================================================
 CREATE TABLE product_categories (
     product_category_id INT AUTO_INCREMENT PRIMARY KEY,
     product_category_name VARCHAR(100) NOT NULL
 );
 
--- 3. Events Table
+INSERT INTO product_categories (product_category_name) VALUES
+('Basic Coffee'),
+('Cold Coffee'),
+('Tea & Non-Coffee'),
+('Specialty Drinks'),
+('Bakery & Snacks');
+
+-- 3. Events Table =========================================================================================
 CREATE TABLE events (
     event_id INT AUTO_INCREMENT PRIMARY KEY,
     event_name VARCHAR(150) NOT NULL,
@@ -24,7 +31,7 @@ CREATE TABLE events (
     is_active BOOLEAN DEFAULT TRUE
 );
 
--- 4. Promotions Table
+-- 4. Promotions Table =========================================================================================
 CREATE TABLE promotions (
     promotion_id INT AUTO_INCREMENT PRIMARY KEY,
     promotion_name VARCHAR(150) NOT NULL,
@@ -33,7 +40,7 @@ CREATE TABLE promotions (
     end_date DATETIME
 );
 
--- 5. Products Table
+-- 5. Products Table =========================================================================================
 CREATE TABLE products (
     product_id INT AUTO_INCREMENT PRIMARY KEY,
     category_id INT,
@@ -46,7 +53,7 @@ CREATE TABLE products (
     FOREIGN KEY (category_id) REFERENCES product_categories(product_category_id) ON DELETE SET NULL
 );
 
--- 6. Orders Table
+-- 6. Orders Table =========================================================================================
 CREATE TABLE orders (
     order_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
@@ -57,7 +64,7 @@ CREATE TABLE orders (
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
--- 7. Order Detail Table
+-- 7. Order Detail Table =========================================================================================
 CREATE TABLE order_details (
     order_detail_id INT AUTO_INCREMENT PRIMARY KEY,
     order_id INT,
@@ -69,7 +76,7 @@ CREATE TABLE order_details (
     FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE RESTRICT
 );
 
--- 8. Payments Table
+-- 8. Payments Table =========================================================================================
 CREATE TABLE payments (
     payment_id INT AUTO_INCREMENT PRIMARY KEY,
     order_id INT,
@@ -79,7 +86,7 @@ CREATE TABLE payments (
     FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE
 );
 
--- 9. Point Transaction Table
+-- 9. Point Transaction Table =========================================================================================
 CREATE TABLE point_transactions (
     transaction_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
@@ -93,7 +100,7 @@ CREATE TABLE point_transactions (
     FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE SET NULL
 );
 
--- 10. Promotion Items Table
+-- 10. Promotion Items Table =========================================================================================
 CREATE TABLE promotion_items (
     promotion_item_id INT AUTO_INCREMENT PRIMARY KEY,
     promotion_id INT,
@@ -102,7 +109,7 @@ CREATE TABLE promotion_items (
     FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
 );
 
--- 11. Exchange Product Table
+-- 11. Exchange Product Table =========================================================================================
 CREATE TABLE exchange_products (
     exchange_product_id INT AUTO_INCREMENT PRIMARY KEY,
     product_id INT,
@@ -112,7 +119,7 @@ CREATE TABLE exchange_products (
     FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
 );
 
--- 12. Exchange Table
+-- 12. Exchange Table =========================================================================================
 CREATE TABLE exchanges (
     exchange_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
