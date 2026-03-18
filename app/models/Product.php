@@ -29,4 +29,14 @@ class Product {
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function getExchangeProducts() {
+        $query = "SELECT p.*, ep.points_required, ep.stock_quantity, ep.exchange_product_id
+                  FROM products p
+                  JOIN exchange_products ep ON p.product_id = ep.product_id
+                  WHERE ep.is_active = 1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

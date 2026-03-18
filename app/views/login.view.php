@@ -30,6 +30,15 @@
                 <h1 class="form-heading">Welcome Back!</h1>
                 <p class="form-subtext">Login to your account to continue</p>
 
+                <?php if (isset($_SESSION['errors'])): ?>
+                    <div class="error-messages" style="background: #fee2e2; color: #dc2626; padding: 0.8rem; border-radius: 0.5rem; margin-bottom: 1rem; font-size: 0.9rem;">
+                        <?php foreach ($_SESSION['errors'] as $error): ?>
+                            <p><i class="fa-solid fa-circle-exclamation"></i> <?php echo $error; ?></p>
+                        <?php endforeach; ?>
+                        <?php unset($_SESSION['errors']); ?>
+                    </div>
+                <?php endif; ?>
+
                 <div class="input-group">
                     <div class="label-row">
                         <label>Email</label>

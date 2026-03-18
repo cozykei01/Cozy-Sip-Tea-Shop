@@ -156,6 +156,22 @@ CREATE TABLE exchange_products (
     FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
 );
 
+INSERT INTO exchange_products (product_id, points_required, stock_quantity, is_active) VALUES
+-- 1. Americano (Original Price: 12000)
+(1, 1200, 20, TRUE),
+
+-- 2. Espresso (Original Price: 12000)
+(4, 1200, 15, TRUE),
+
+-- 3. Green Tea (Original Price: 13000)
+(11, 1300, 20, TRUE),
+
+-- 4. Croissants (Original Price: 14000)
+(19, 1400, 10, TRUE),
+
+-- 5. Cookies (Original Price: 10000)
+(22, 1000, 30, TRUE);
+
 -- 12. Exchange Table =========================================================================================
 CREATE TABLE exchanges (
     exchange_id INT AUTO_INCREMENT PRIMARY KEY,

@@ -10,23 +10,31 @@ const addToCartButtons = document.querySelectorAll('.add-to-cart');
 let cart = [];
 
 // Open Modal
-floatingCart.addEventListener('click', () => {
-    cartModalOverlay.classList.add('active');
-    cartModal.classList.add('active');
-    renderCart();
-});
+if (floatingCart) {
+    floatingCart.addEventListener('click', () => {
+        cartModalOverlay.classList.add('active');
+        cartModal.classList.add('active');
+        renderCart();
+    });
+}
 
 // Close Modal
 const closeModal = () => {
-    cartModalOverlay.classList.remove('active');
-    cartModal.classList.remove('active');
+    if (cartModalOverlay) cartModalOverlay.classList.remove('active');
+    if (cartModal) cartModal.classList.remove('active');
 };
-closeCartModal.addEventListener('click', closeModal);
-cartModalOverlay.addEventListener('click', closeModal);
+if (closeCartModal) closeCartModal.addEventListener('click', closeModal);
+if (cartModalOverlay) cartModalOverlay.addEventListener('click', closeModal);
 
 // Add to Cart Logic
 addToCartButtons.forEach(button => {
     button.addEventListener('click', (e) => {
+        if (!userIsLoggedIn) {
+            if (confirm("You need to be logged in to add items to your cart. Would you like to login now?")) {
+                window.location.href = "index.php?page=login";
+            }
+            return;
+        }
         const productCard = e.target.closest('.product-card');
         const id = productCard.getAttribute('data-id');
         const name = productCard.getAttribute('data-name');
@@ -43,31 +51,52 @@ addToCartButtons.forEach(button => {
 
         updateCartCount();
         
+        // toast notification
+        const toast = document.createElement('div');
+        toast.style = "position: fixed; bottom: 100px; right: 20px; background: #004225; color: white; padding: 1rem 2rem; border-radius: 2rem; z-index: 10000; animation: fadeInUp 0.5s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600;";
+        toast.innerHTML = `<i class="fa-solid fa-check-circle"></i> Added ${name} to cart`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+
         // Small animation effect on click
         const icon = button.querySelector('i');
-        icon.classList.remove('fa-cart-plus');
-        icon.classList.add('fa-check');
-        setTimeout(() => {
-            icon.classList.remove('fa-check');
-            icon.classList.add('fa-cart-plus');
-        }, 1000);
+        if (icon) {
+            icon.classList.remove('fa-cart-plus');
+            icon.classList.add('fa-check');
+            setTimeout(() => {
+                icon.classList.remove('fa-check');
+                icon.classList.add('fa-cart-plus');
+            }, 1000);
+        }
     });
 });
 
 // Update Cart Count Badge
 function updateCartCount() {
     const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-    cartCountElement.textContent = totalCount;
+    if (cartCountElement) cartCountElement.textContent = totalCount;
     
+    // Show/Hide floating cart
+    if (floatingCart) {
+        if (totalCount > 0) {
+            floatingCart.style.display = 'flex';
+        } else {
+            floatingCart.style.display = 'none';
+        }
+    }
+
     // Animation for cart badge
-    cartCountElement.style.transform = 'scale(1.5)';
-    setTimeout(() => {
-        cartCountElement.style.transform = 'scale(1)';
-    }, 200);
+    if (cartCountElement) {
+        cartCountElement.style.transform = 'scale(1.5)';
+        setTimeout(() => {
+            cartCountElement.style.transform = 'scale(1)';
+        }, 200);
+    }
 }
 
 // Render Cart Items in Modal
 function renderCart() {
+    if (!cartItemsContainer) return;
     if (cart.length === 0) {
         cartItemsContainer.innerHTML = `
             <div class="empty-cart-message">

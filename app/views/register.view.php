@@ -28,10 +28,11 @@
         <div class="register-form-side">
             <form action="index.php?page=register_process" method="POST" class="auth-form">
                 <h1 class="form-heading">Create Account</h1>
+                <p class="form-subtext">Create your account to start ordering</p>
 
                 <?php 
                 if (isset($_SESSION['errors'])): ?>
-                    <div class="error-messages" style="background: #fee2e2; border: 1px solid #ef4444; color: #b91c1c; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 1rem; font-size: 0.875rem;">
+                    <div class="error-messages" style="background: #fee2e2; color: #dc2626; padding: 0.8rem; border-radius: 0.5rem; margin-bottom: 1rem; font-size: 0.9rem;">
                         <?php foreach ($_SESSION['errors'] as $error): ?>
                             <p><i class="fa-solid fa-circle-exclamation"></i> <?php echo $error; ?></p>
                         <?php endforeach; ?>

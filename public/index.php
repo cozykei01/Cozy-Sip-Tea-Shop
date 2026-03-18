@@ -9,6 +9,14 @@ $page = $_GET['page'] ?? 'home';
 
 // Basic routing
 switch ($page) {
+    case 'exchange':
+        require_once '../app/models/Product.php';
+        $database = new Database();
+        $db = $database->getConnection();
+        $productModel = new Product($db);
+        $exchangeProducts = $productModel->getExchangeProducts();
+        require_once '../app/views/exchange.view.php';
+        break;
     case 'home':
     default:
         error_reporting(E_ALL);
@@ -113,5 +121,12 @@ switch ($page) {
         $db = $database->getConnection();
         $controller = new OrderController($db);
         $controller->store();
+        break;
+    case 'exchange_process':
+        require_once '../app/controllers/ExchangeController.php';
+        $database = new Database();
+        $db = $database->getConnection();
+        $controller = new ExchangeController($db);
+        $controller->process();
         break;
 }
