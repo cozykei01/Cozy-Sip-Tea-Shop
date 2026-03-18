@@ -66,23 +66,55 @@ $activePage = 'profile';
             opacity: 0.1;
         }
 
+        .avatar-wrapper {
+            position: relative;
+            margin-bottom: 1.5rem;
+            z-index: 5;
+        }
+
         .profile-avatar-large {
             width: 140px;
             height: 140px;
             border-radius: 50%;
             border: 5px solid var(--cozy-gold);
-            margin-bottom: 1.5rem;
             overflow: hidden;
             background: white;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             position: relative;
-            z-index: 1;
         }
 
         .profile-avatar-large img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+
+        .avatar-upload-btn {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 42px;
+            height: 42px;
+            background: var(--cozy-gold);
+            color: var(--cozy-dark);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            z-index: 20;
+        }
+
+        .avatar-upload-btn:hover {
+            transform: scale(1.1);
+            background: #f0bd2d;
+        }
+
+        .avatar-upload-btn i {
+            font-size: 1.1rem;
         }
 
         .profile-name {
@@ -240,8 +272,14 @@ $activePage = 'profile';
         <!-- Header Section -->
         <header class="profile-header-card">
             <div class="profile-card-left">
-                <div class="profile-avatar-large">
-                    <img src="assets/image/default_avatar.png" alt="Profile">
+                <div class="avatar-wrapper">
+                    <div class="profile-avatar-large" id="profileAvatarContainer">
+                        <img src="<?php echo !empty($user['profile_image']) ? htmlspecialchars($user['profile_image']) : 'assets/image/default_avatar.png'; ?>" alt="Profile" id="profileDisplayImg">
+                    </div>
+                    <div class="avatar-upload-btn" onclick="document.getElementById('profileInput').click()" title="Change Profile Picture">
+                        <i class="fa-solid fa-plus"></i>
+                    </div>
+                    <input type="file" id="profileInput" style="display: none;" accept="image/*">
                 </div>
                 <h1 class="profile-name"><?php echo htmlspecialchars($user['full_name']); ?></h1>
             </div>
@@ -363,6 +401,38 @@ $activePage = 'profile';
             ordersTabBtn.classList.remove('active');
             exchangesContent.style.display = 'flex';
             ordersContent.style.display = 'none';
+        };
+
+        // Profile Image Upload
+        const profileInput = document.getElementById('profileInput');
+        const profileDisplayImg = document.getElementById('profileDisplayImg');
+        const navProfileImg = document.querySelector('.nav-profile-img img');
+
+        profileInput.onchange = function() {
+            if (this.files && this.files[0]) {
+                const formData = new FormData();
+                formData.append('profile_image', this.files[0]);
+
+                fetch('index.php?page=upload_profile_image', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update both images
+                        profileDisplayImg.src = data.image_path;
+                        if (navProfileImg) navProfileImg.src = data.image_path;
+                        alert(data.message);
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred during upload.');
+                });
+            }
         };
     </script>
 </body>

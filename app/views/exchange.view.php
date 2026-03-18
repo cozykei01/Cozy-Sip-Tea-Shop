@@ -166,7 +166,7 @@ $userPoints = $userIsLoggedIn ? $_SESSION['user_points'] : 0;
                         if (strpos($name, 'espresso') !== false) $img = 'https://images.unsplash.com/photo-1510591509098-f4fdc6d0ff04?auto=format&fit=crop&q=80&w=500';
                         if (strpos($name, 'americano') !== false) $img = 'https://images.unsplash.com/photo-1551030173-122aabc4489c?auto=format&fit=crop&q=80&w=500';
                         if (strpos($name, 'latte') !== false) $img = 'https://images.unsplash.com/photo-1570968915860-54d5c301fa9f?auto=format&fit=crop&q=80&w=500';
-                        if (strpos($name, 'green tea') !== false) $img = 'https://images.unsplash.com/photo-1597318181409-cf84a815183f?auto=format&fit=crop&q=80&w=500';
+                        if (strpos($name, 'green tea') !== false) $img = 'https://images.unsplash.com/photo-1515696431267-434d28362402?auto=format&fit=crop&q=80&w=500';
                         if (strpos($name, 'croissant') !== false) $img = 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&q=80&w=500';
                         if (strpos($name, 'cookie') !== false) $img = 'https://images.unsplash.com/photo-1499636136210-6f4ee915583e?auto=format&fit=crop&q=80&w=500';
                     ?>

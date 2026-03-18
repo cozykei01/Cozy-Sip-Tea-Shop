@@ -117,4 +117,15 @@ class User {
         $stmt->execute();
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+
+    /**
+     * Update user's profile image
+     */
+    public function updateProfileImage($userId, $imagePath) {
+        $query = "UPDATE " . $this->table_name . " SET profile_image = :profile_image WHERE user_id = :user_id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":profile_image", $imagePath);
+        $stmt->bindParam(":user_id", $userId);
+        return $stmt->execute();
+    }
 }

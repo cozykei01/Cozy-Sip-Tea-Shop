@@ -100,6 +100,7 @@ switch ($page) {
                 $_SESSION['user_email'] = $user['email'];
                 $_SESSION['user_name'] = $user['full_name'];
                 $_SESSION['user_points'] = $user['point_balance'];
+                $_SESSION['user_profile_img'] = $user['profile_image'];
                 
                 header("Location: index.php?page=home");
                 exit();
@@ -135,5 +136,12 @@ switch ($page) {
         $db = $database->getConnection();
         $controller = new ProfileController($db);
         $controller->index();
+        break;
+    case 'upload_profile_image':
+        require_once '../app/controllers/ProfileController.php';
+        $database = new Database();
+        $db = $database->getConnection();
+        $controller = new ProfileController($db);
+        $controller->uploadProfileImage();
         break;
 }

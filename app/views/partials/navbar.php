@@ -25,8 +25,9 @@
                 <div class="nav-profile-container">
                     <button class="profile-btn" id="profileDropdownBtn">
                         <div class="nav-profile-img">
-                            <img src="assets/image/default_avatar.png" alt="Profile">
+                            <img src="<?php echo !empty($_SESSION['user_profile_img']) ? htmlspecialchars($_SESSION['user_profile_img']) : 'assets/image/default_avatar.png'; ?>" alt="User Profile">
                         </div>
+                        <i class="fa-solid fa-chevron-down profile-chevron"></i>
                     </button>
                     
                     <!-- Profile Dropdown -->
