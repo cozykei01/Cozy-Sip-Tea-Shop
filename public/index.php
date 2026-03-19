@@ -101,6 +101,7 @@ switch ($page) {
                 $_SESSION['user_name'] = $user['full_name'];
                 $_SESSION['user_points'] = $user['point_balance'];
                 $_SESSION['user_profile_img'] = $user['profile_image'];
+                $_SESSION['user_role'] = $user['role'];
                 
                 header("Location: index.php?page=home");
                 exit();

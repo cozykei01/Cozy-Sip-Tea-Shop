@@ -49,4 +49,38 @@ class Product {
         $stmt->execute();
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+    /**
+     * Get all categories
+     */
+    public function getCategories() {
+        $query = "SELECT * FROM product_categories ORDER BY product_category_name ASC";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Create a new product
+     */
+    public function create($data) {
+        $query = "INSERT INTO " . $this->table_name . " 
+                  (category_id, product_name, quantity, price, event_price, earned_point_value, event_status) 
+                  VALUES (:category_id, :product_name, :quantity, :price, :event_price, :earned_point_value, :event_status)";
+        
+        $stmt = $this->conn->prepare($query);
+
+        // Bind values
+        $stmt->bindParam(":category_id", $data['category_id']);
+        $stmt->bindParam(":product_name", $data['product_name']);
+        $stmt->bindParam(":quantity", $data['quantity']);
+        $stmt->bindParam(":price", $data['price']);
+        $stmt->bindParam(":event_price", $data['event_price']);
+        $stmt->bindParam(":earned_point_value", $data['earned_point_value']);
+        $stmt->bindParam(":event_status", $data['event_status']);
+
+        if ($stmt->execute()) {
+            return $this->conn->lastInsertId();
+        }
+        return false;
+    }
 }

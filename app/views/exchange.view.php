@@ -214,7 +214,7 @@ $userPoints = $userIsLoggedIn ? $_SESSION['user_points'] : 0;
                         <div class="card-img-wrapper">
                             <img src="<?php echo $img; ?>" alt="<?php echo htmlspecialchars($product['product_name']); ?>">
                             <div class="points-badge">
-                                <i class="fa-solid fa-star"></i> <?php echo number_format($product['points_required']); ?> Pts
+                                <i class="fa-solid fa-leaf"></i> <?php echo number_format($product['points_required']); ?> Pts
                             </div>
                         </div>
                         <div class="card-body">

@@ -249,10 +249,9 @@ $activePage = 'contact';
 
         <div class="map-section">
             <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m12!1m3!1d3819.336154388657!2d96.15570207570577!3d16.809695619176437!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x30c1ecbc29606821%3A0xe54911d33198083a!2sShwedagon%20Pagoda!5e0!3m2!1sen!2smm!4v1710849000000!5m2!1sen!2smm" 
+                src="https://maps.google.com/maps?q=Golden%20Valley,%20Bahan%20Township,%20Yangon&t=&z=15&ie=UTF8&iwloc=&output=embed" 
                 allowfullscreen="" 
-                loading="lazy" 
-                referrerpolicy="no-referrer-when-downgrade">
+                loading="lazy">
             </iframe>
         </div>
     </div>
