@@ -90,4 +90,11 @@ class Exchange {
         $stmt->execute([$userId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    /**
+     * Get the database connection
+     */
+    public function getConnection() {
+        return $this->db;
+    }
 }

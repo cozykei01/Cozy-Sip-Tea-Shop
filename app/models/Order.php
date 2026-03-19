@@ -7,6 +7,10 @@ class Order {
         $this->db = $db;
     }
 
+    public function getConnection() {
+        return $this->db;
+    }
+
     /**
      * Create a new order with multiple related records in a single transaction.
      */

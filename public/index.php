@@ -144,4 +144,25 @@ switch ($page) {
         $controller = new ProfileController($db);
         $controller->uploadProfileImage();
         break;
+    case 'update_profile':
+        require_once '../app/controllers/ProfileController.php';
+        $database = new Database();
+        $db = $database->getConnection();
+        $controller = new ProfileController($db);
+        $controller->updateProfile();
+        break;
+    case 'get_notifications':
+        require_once '../app/controllers/ProfileController.php';
+        $database = new Database();
+        $db = $database->getConnection();
+        $controller = new ProfileController($db);
+        $controller->getNotifications();
+        break;
+    case 'mark_notifications_read':
+        require_once '../app/controllers/ProfileController.php';
+        $database = new Database();
+        $db = $database->getConnection();
+        $controller = new ProfileController($db);
+        $controller->markNotificationsRead();
+        break;
 }

@@ -26,7 +26,7 @@ body {
 
 /* ================== NAVBAR ================== */
 .navbar {
-    background-color: var(--cozy-dark);
+    background-color: var(--cozy-dark) !important;
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -137,10 +137,132 @@ body {
     height: 1rem;
     width: 1rem;
     border-radius: 50%;
-    display: flex;
+    display: none; /* Hidden by default */
     align-items: center;
     justify-content: center;
     border: 0.125rem solid white;
+}
+
+/* Notification Dropdown */
+.noti-dropdown {
+    position: absolute !important;
+    top: calc(100% + 1rem) !important;
+    right: 0 !important;
+    width: 320px !important;
+    background-color: #ffffff !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3) !important;
+    display: none;
+    z-index: 9999 !important;
+    overflow: hidden !important;
+    animation: fadeInUp 0.3s ease;
+    border: 1px solid #eee !important;
+}
+
+.noti-dropdown.active {
+    display: block !important;
+}
+
+.noti-header {
+    padding: 1rem 1.2rem !important;
+    border-bottom: 1px solid #f0f0f0 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    background: #f9fdfa !important;
+}
+
+.noti-header h3 {
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    color: #0b2611 !important;
+    margin: 0 !important;
+}
+
+.mark-read-btn {
+    background: none !important;
+    border: none !important;
+    font-size: 0.75rem !important;
+    color: #004225 !important;
+    cursor: pointer !important;
+    font-weight: 600 !important;
+    padding: 0 !important;
+}
+
+.noti-list {
+    max-height: 350px !important;
+    overflow-y: auto !important;
+    background: #fff !important;
+}
+
+.noti-item {
+    padding: 1rem 1.2rem !important;
+    border-bottom: 1px solid #f5f5f5 !important;
+    display: flex !important;
+    gap: 12px !important;
+    transition: background 0.2s !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+}
+
+.noti-item:hover {
+    background-color: #f8fbf9 !important;
+}
+
+.noti-item.unread {
+    background-color: #f1f8f5 !important;
+}
+
+.noti-icon {
+    width: 36px !important;
+    height: 36px !important;
+    background: #e6f7ef !important;
+    color: #004225 !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+}
+
+.noti-details {
+    flex: 1 !important;
+}
+
+.noti-title {
+    display: block !important;
+    font-size: 0.85rem !important;
+    font-weight: 700 !important;
+    color: #0b2611 !important;
+    margin-bottom: 2px !important;
+}
+
+.noti-msg {
+    display: block !important;
+    font-size: 0.8rem !important;
+    color: #666 !important;
+    line-height: 1.4 !important;
+}
+
+.noti-time {
+    display: block !important;
+    font-size: 0.7rem !important;
+    color: #999 !important;
+    margin-top: 5px !important;
+}
+
+.noti-empty {
+    padding: 3rem 1rem !important;
+    text-align: center !important;
+    color: #aaa !important;
+    background: #fff !important;
+}
+
+.noti-empty i {
+    font-size: 2.5rem !important;
+    margin-bottom: 1rem !important;
+    display: block !important;
+    opacity: 0.3 !important;
 }
 
 .nav-profile-container {

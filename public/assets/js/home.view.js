@@ -284,7 +284,29 @@ const initCheckout = () => {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert(`Order confirmed with ${method.toUpperCase()}! Thank you for your purchase.`);
+                    // 1. Update Notification Badge IMMEDIATELY (Zero Latency)
+                    if (data.unread_count !== undefined) {
+                        const notiBadge = document.getElementById('notiBadge');
+                        if (notiBadge) {
+                            notiBadge.textContent = data.unread_count > 9 ? '9+' : data.unread_count;
+                            notiBadge.style.display = data.unread_count > 0 ? 'flex' : 'none';
+                        }
+                    }
+
+                    // 2. Trigger background notification list fetch
+                    if (typeof window.fetchNotifications === 'function') {
+                        console.log('Triggering notification fetch...');
+                        window.fetchNotifications();
+                    } else {
+                        console.error('window.fetchNotifications is not defined!');
+                    }
+
+                    // Success message (Non-blocking toast)
+                    const toast = document.createElement('div');
+                    toast.style = "position: fixed; top: 100px; left: 0; right: 0; width: fit-content; margin: 0 auto; background: #004225; color: white; padding: 1rem 2rem; border-radius: 2rem; z-index: 10001; animation: fadeInUp 0.5s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-weight: 600; text-align: center;";
+                    toast.innerHTML = `<i class="fa-solid fa-check-circle"></i> Order confirmed with ${method.toUpperCase()}! Thank you.`;
+                    document.body.appendChild(toast);
+                    setTimeout(() => toast.remove(), 4000);
                     
                     // Update Points Display in Navbar
                     const pointsDisplay = document.getElementById('userPointsDisplay');

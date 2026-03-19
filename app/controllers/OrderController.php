@@ -51,11 +51,18 @@ class OrderController {
             // Update session points for real-time display in navbar
             $_SESSION['user_points'] += $earnedPoints;
             
+            // Create notification
+            require_once '../app/models/Notification.php';
+            $notification = new Notification($this->orderModel->getConnection()); // Assuming Order model has getConnection or use shared DB
+            $dateStr = date('M d, Y | h:i A');
+            $notification->create($userId, 'Payment Completed', "Your order #$orderId has been successfully placed at $dateStr.");
+
             echo json_encode([
                 'success' => true, 
                 'message' => 'Order placed successfully!', 
                 'order_id' => $orderId,
-                'new_points' => $_SESSION['user_points']
+                'new_points' => $_SESSION['user_points'],
+                'unread_count' => $notification->countUnread($userId)
             ]);
         } else {
             echo json_encode(['success' => false, 'message' => 'Failed to process order. Please try again.']);

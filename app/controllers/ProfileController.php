@@ -101,4 +101,86 @@ class ProfileController {
             echo json_encode(['success' => false, 'message' => 'Failed to move uploaded file']);
         }
     }
+
+    /**
+     * Handle profile update (Full Name, Contact)
+     */
+    public function updateProfile() {
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+            return;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request']);
+            return;
+        }
+
+        // Get JSON data
+        $jsonData = file_get_contents('php://input');
+        $data = json_decode($jsonData, true);
+
+        if (!$data || empty($data['full_name'])) {
+            echo json_encode(['success' => false, 'message' => 'Full Name is required']);
+            return;
+        }
+
+        $userId = $_SESSION['user_id'];
+        
+        // Update database
+        if ($this->userModel->updateProfile($userId, $data)) {
+            // Update session
+            $_SESSION['user_name'] = $data['full_name'];
+
+            echo json_encode([
+                'success' => true, 
+                'message' => 'Profile updated successfully',
+                'full_name' => $data['full_name'],
+                'contact' => $data['contact']
+            ]);
+        }
+    }
+
+    /**
+     * Fetch unread notifications
+     */
+    public function getNotifications() {
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+            return;
+        }
+
+        require_once '../app/models/Notification.php';
+        $notification = new Notification($this->userModel->getConnection());
+        $userId = $_SESSION['user_id'];
+        
+        $unreadCount = $notification->countUnread($userId);
+        $notifications = $notification->getAll($userId, 10);
+        
+        echo json_encode([
+            'success' => true,
+            'unread_count' => $unreadCount,
+            'notifications' => $notifications
+        ]);
+    }
+
+    /**
+     * Mark notifications as read
+     */
+    public function markNotificationsRead() {
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+            return;
+        }
+
+        require_once '../app/models/Notification.php';
+        $notification = new Notification($this->userModel->getConnection());
+        $userId = $_SESSION['user_id'];
+        
+        if ($notification->markAllAsRead($userId)) {
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false]);
+        }
+    }
 }

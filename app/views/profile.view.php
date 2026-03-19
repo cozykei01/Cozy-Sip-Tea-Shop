@@ -11,7 +11,7 @@ $activePage = 'profile';
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/style.css?v=<?php echo time(); ?>">
     <style>
         /* --- Force Navbar Centering --- */
         .nav-profile-container, .profile-btn, .nav-profile-img {
@@ -263,6 +263,48 @@ $activePage = 'profile';
             .info-grid { grid-template-columns: 1fr; gap: 1rem; }
             .profile-card-right { padding: 2rem; }
         }
+
+        /* --- Edit Modal Styles --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+            z-index: 1000; display: none; align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background: white; width: 90%; max-width: 500px; padding: 2.5rem;
+            border-radius: 2rem; box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            position: relative; animation: modalSlideUp 0.4s ease;
+        }
+        @keyframes modalSlideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .modal-header h3 { margin: 0; font-family: 'Outfit', sans-serif; font-size: 1.5rem; color: var(--cozy-green); }
+        .close-modal-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #888; transition: color 0.3s; }
+        .close-modal-btn:hover { color: #555; }
+        
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 700; color: #666; margin-bottom: 8px; text-transform: uppercase; }
+        .form-group input { 
+            width: 100%; padding: 0.9rem 1.2rem; border-radius: 1rem; border: 2px solid #eee;
+            font-family: inherit; font-size: 1rem; transition: all 0.3s;
+        }
+        .form-group input:focus { border-color: var(--cozy-green); outline: none; box-shadow: 0 0 0 4px rgba(11, 38, 17, 0.05); }
+        
+        .save-btn {
+            width: 100%; padding: 1rem; background: var(--cozy-green); color: white;
+            border: none; border-radius: 1rem; font-weight: 800; font-size: 1rem;
+            cursor: pointer; transition: all 0.3s; margin-top: 1rem;
+        }
+        .save-btn:hover { background: var(--cozy-green-light); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(11, 38, 17, 0.15); }
+
+        .edit-profile-btn {
+            background: #f0f7f3; color: var(--cozy-green); border: none; padding: 0.5rem 1rem;
+            border-radius: 2rem; font-size: 0.85rem; font-weight: 700; cursor: pointer;
+            transition: all 0.3s; display: flex; align-items: center; gap: 0.5rem;
+        }
+        .edit-profile-btn:hover { background: var(--cozy-green); color: white; }
     </style>
 </head>
 <body>
@@ -285,7 +327,10 @@ $activePage = 'profile';
             </div>
             
             <div class="profile-card-right">
-                <h3 class="section-title"><i class="fa-solid fa-circle-info"></i> Account Details</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h3 class="section-title" style="margin-bottom: 0;"><i class="fa-solid fa-circle-info"></i> Account Details</h3>
+                    <button class="edit-profile-btn" id="openEditModalBtn"><i class="fa-solid fa-pen-to-square"></i> Edit Profile</button>
+                </div>
                 
                 <div class="info-grid">
                     <div class="info-group">
@@ -294,7 +339,7 @@ $activePage = 'profile';
                     </div>
                     <div class="info-group">
                         <div class="info-label">Contact Number</div>
-                        <div class="info-value"><?php echo htmlspecialchars($user['contact'] ?? 'Not provided'); ?></div>
+                        <div class="info-value" id="displayContact"><?php echo htmlspecialchars($user['contact'] ?? 'Not provided'); ?></div>
                     </div>
                     <div class="info-group">
                         <div class="info-label">Role</div>
@@ -380,6 +425,27 @@ $activePage = 'profile';
         </section>
     </div>
 
+    <!-- Edit Profile Modal -->
+    <div class="modal-overlay" id="editModalOverlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Profile</h3>
+                <button class="close-modal-btn" id="closeEditModalBtn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="editProfileForm">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="editFullName" value="<?php echo htmlspecialchars($user['full_name']); ?>" required>
+                </div>
+                <div class="form-group">
+                    <label>Contact Number</label>
+                    <input type="text" id="editContact" value="<?php echo htmlspecialchars($user['contact'] ?? ''); ?>" placeholder="e.g., 09xxxxxxxxx">
+                </div>
+                <button type="submit" class="save-btn" id="saveProfileBtn">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
     <?php include 'partials/footer.php'; ?>
 
     <script src="assets/js/home.view.js"></script>
@@ -433,6 +499,81 @@ $activePage = 'profile';
                     alert('An error occurred during upload.');
                 });
             }
+        };
+
+        // Profile Edit Modal
+        const editModalOverlay = document.getElementById('editModalOverlay');
+        const openEditModalBtn = document.getElementById('openEditModalBtn');
+        const closeEditModalBtn = document.getElementById('closeEditModalBtn');
+        const editProfileForm = document.getElementById('editProfileForm');
+        const saveProfileBtn = document.getElementById('saveProfileBtn');
+
+        const profileNameDisplay = document.querySelector('.profile-name');
+        const fullNameValueDisplay = document.querySelectorAll('.info-value')[1]; // Second info-value is Full Name or Contact? 
+        // Let's use IDs for info values for more reliability
+        const contactValueDisplay = document.getElementById('displayContact');
+        const fullNameInGrid = document.getElementById('displayFullName'); // Wait, I need to add these IDs
+
+        openEditModalBtn.onclick = () => {
+            editModalOverlay.style.display = 'flex';
+        };
+
+        const closeEditModal = () => {
+            editModalOverlay.style.display = 'none';
+        };
+
+        closeEditModalBtn.onclick = closeEditModal;
+        editModalOverlay.onclick = (e) => {
+            if (e.target === editModalOverlay) closeEditModal();
+        };
+
+        editProfileForm.onsubmit = (e) => {
+            e.preventDefault();
+            
+            const fullName = document.getElementById('editFullName').value;
+            const contact = document.getElementById('editContact').value;
+            
+            saveProfileBtn.disabled = true;
+            saveProfileBtn.textContent = 'Saving...';
+
+            fetch('index.php?page=update_profile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    full_name: fullName,
+                    contact: contact
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update UI
+                    profileNameDisplay.textContent = data.full_name;
+                    if (document.getElementById('displayFullName')) {
+                        document.getElementById('displayFullName').textContent = data.full_name;
+                    }
+                    if (document.getElementById('displayContact')) {
+                        document.getElementById('displayContact').textContent = data.contact || 'Not provided';
+                    }
+                    
+                    // Update Navbar name
+                    const navUserName = document.querySelector('.user-name'); 
+                    if (navUserName) navUserName.textContent = data.full_name;
+
+                    alert(data.message);
+                    closeEditModal();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while updating profile.');
+            })
+            .finally(() => {
+                saveProfileBtn.disabled = false;
+                saveProfileBtn.textContent = 'Save Changes';
+            });
         };
     </script>
 </body>

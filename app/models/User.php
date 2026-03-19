@@ -121,11 +121,37 @@ class User {
     /**
      * Update user's profile image
      */
+    /**
+     * Update user's profile image
+     */
     public function updateProfileImage($userId, $imagePath) {
         $query = "UPDATE " . $this->table_name . " SET profile_image = :profile_image WHERE user_id = :user_id";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":profile_image", $imagePath);
         $stmt->bindParam(":user_id", $userId);
         return $stmt->execute();
+    }
+
+    /**
+     * Update user's profile details
+     */
+    public function updateProfile($userId, $data) {
+        $query = "UPDATE " . $this->table_name . " 
+                  SET full_name = :full_name, contact = :contact 
+                  WHERE user_id = :user_id";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":full_name", $data['full_name']);
+        $stmt->bindParam(":contact", $data['contact']);
+        $stmt->bindParam(":user_id", $userId);
+        
+        return $stmt->execute();
+    }
+
+    /**
+     * Get the database connection
+     */
+    public function getConnection() {
+        return $this->conn;
     }
 }

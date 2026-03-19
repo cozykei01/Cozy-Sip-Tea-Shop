@@ -41,6 +41,21 @@ class ExchangeController {
         $result = $this->exchangeModel->processExchange($userId, $exchangeCart);
 
         if ($result === true) {
+            // Create notification
+            require_once '../app/models/Notification.php';
+            $notification = new Notification($this->exchangeModel->getConnection());
+            
+            $totalPoints = 0;
+            foreach ($exchangeCart as $item) {
+                $totalPoints += ($item['points'] * $item['quantity']);
+            }
+            
+            $notification->create(
+                $userId, 
+                "Exchange Successful", 
+                "You have successfully exchanged " . number_format($totalPoints) . " points for " . count($exchangeCart) . " item(s)."
+            );
+
             // Update session points for real-time display in navbar
             $newPoints = $this->exchangeModel->getUserPoints($userId);
             $_SESSION['user_points'] = $newPoints;
@@ -48,7 +63,8 @@ class ExchangeController {
             echo json_encode([
                 'success' => true,
                 'message' => 'Exchange completed successfully!',
-                'newPoints' => $newPoints
+                'newPoints' => $newPoints,
+                'unread_count' => $notification->countUnread($userId)
             ]);
         } else {
             // $result contains the error message string

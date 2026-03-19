@@ -10,7 +10,7 @@ $userPoints = $userIsLoggedIn ? $_SESSION['user_points'] : 0;
     <title>Cozy Sip Tea Shop - Exchange</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/style.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="assets/css/home.view.css">
     <style>
         .exchange-hero {
@@ -166,7 +166,7 @@ $userPoints = $userIsLoggedIn ? $_SESSION['user_points'] : 0;
                         if (strpos($name, 'espresso') !== false) $img = 'https://images.unsplash.com/photo-1510591509098-f4fdc6d0ff04?auto=format&fit=crop&q=80&w=500';
                         if (strpos($name, 'americano') !== false) $img = 'https://images.unsplash.com/photo-1551030173-122aabc4489c?auto=format&fit=crop&q=80&w=500';
                         if (strpos($name, 'latte') !== false) $img = 'https://images.unsplash.com/photo-1570968915860-54d5c301fa9f?auto=format&fit=crop&q=80&w=500';
-                        if (strpos($name, 'green tea') !== false) $img = 'https://images.unsplash.com/photo-1515696431267-434d28362402?auto=format&fit=crop&q=80&w=500';
+                        if (strpos($name, 'green tea') !== false) $img = 'https://images.unsplash.com/photo-1627435601361-ec25f5b1d0e5?auto=format&fit=crop&q=80&w=500';
                         if (strpos($name, 'croissant') !== false) $img = 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&q=80&w=500';
                         if (strpos($name, 'cookie') !== false) $img = 'https://images.unsplash.com/photo-1499636136210-6f4ee915583e?auto=format&fit=crop&q=80&w=500';
                     ?>
@@ -179,7 +179,7 @@ $userPoints = $userIsLoggedIn ? $_SESSION['user_points'] : 0;
                         </div>
                         <div class="card-body">
                             <h3><?php echo htmlspecialchars($product['product_name']); ?></h3>
-                            <span class="stock-info">Available: <?php echo $product['stock_quantity']; ?> items left</span>
+                            <span class="stock-info" id="stock-qty-<?php echo $product['exchange_product_id']; ?>">Available: <?php echo $product['stock_quantity']; ?> items left</span>
                             
                             <button class="redeem-btn" 
                                     onclick="exchangeItem(<?php echo $product['exchange_product_id']; ?>, '<?php echo addslashes($product['product_name']); ?>', <?php echo $product['points_required']; ?>, '<?php echo $img; ?>')"
@@ -231,7 +231,7 @@ $userPoints = $userIsLoggedIn ? $_SESSION['user_points'] : 0;
 
     <script>
         const userIsLoggedIn = <?php echo json_encode($userIsLoggedIn); ?>;
-        const currentPoints = <?php echo $userPoints; ?>;
+        let currentPoints = <?php echo $userPoints; ?>;
         let exchangeCart = [];
 
         // Elements
@@ -360,6 +360,9 @@ $userPoints = $userIsLoggedIn ? $_SESSION['user_points'] : 0;
             if (exchangeCart.length === 0) return;
             
             if (confirm('Are you sure you want to proceed with this exchange?')) {
+                // Keep current items to update stock later
+                const itemsToUpdate = [...exchangeCart];
+                
                 confirmExchangeBtn.disabled = true;
                 confirmExchangeBtn.textContent = 'Processing...';
 
@@ -371,19 +374,67 @@ $userPoints = $userIsLoggedIn ? $_SESSION['user_points'] : 0;
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        alert(data.message);
-                        exchangeCart = [];
-                        updateExchangeUI();
-                        closeExchangeModal();
-                        
-                        // Update points in navbar if exists
-                        const pointDisplay = document.querySelector('.points-balance span');
+                        // 1. Success message
+                        const toast = document.createElement('div');
+                        toast.style = "position: fixed; top: 100px; left: 0; right: 0; width: fit-content; margin: 0 auto; background: #004225; color: white; padding: 1rem 2rem; border-radius: 2rem; z-index: 10001; animation: fadeInUp 0.5s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-weight: 600; text-align: center;";
+                        toast.innerHTML = `<i class="fa-solid fa-check-circle"></i> ${data.message}`;
+                        document.body.appendChild(toast);
+                        setTimeout(() => toast.remove(), 4000);
+
+                        // 2. Update Points
+                        currentPoints = data.newPoints;
+                        const pointDisplay = document.getElementById('userPointsDisplay');
                         if (pointDisplay) {
                             pointDisplay.textContent = data.newPoints.toLocaleString() + ' Pts';
                         }
                         
-                        // Reload to update stock and points consistently
-                        location.reload();
+                        // 3. Update Individual Stock Labels
+                        itemsToUpdate.forEach(item => {
+                            const stockEl = document.getElementById(`stock-qty-${item.id}`);
+                            if (stockEl) {
+                                // Extract current number
+                                const currentText = stockEl.textContent;
+                                const match = currentText.match(/Available: (\d+)/);
+                                if (match) {
+                                    const newStock = Math.max(0, parseInt(match[1]) - item.quantity);
+                                    stockEl.textContent = `Available: ${newStock} items left`;
+                                }
+                            }
+                        });
+
+                        // 3. Update Notification Badge IMMEDIATELY (Zero Latency)
+                        if (data.unread_count !== undefined) {
+                            const notiBadge = document.getElementById('notiBadge');
+                            if (notiBadge) {
+                                notiBadge.textContent = data.unread_count > 9 ? '9+' : data.unread_count;
+                                notiBadge.style.display = data.unread_count > 0 ? 'flex' : 'none';
+                            }
+                        }
+
+                        // 4. Trigger background notification list fetch
+                        if (typeof window.fetchNotifications === 'function') {
+                            window.fetchNotifications();
+                        }
+                        
+                        // 5. Reset UI State
+                        exchangeCart = [];
+                        updateExchangeUI();
+                        closeExchangeModal();
+                        
+                        // 6. Refresh order button states Site-wide (if points dropped)
+                        // This will disable buttons where points are no longer sufficient
+                        document.querySelectorAll('.redeem-btn').forEach(btn => {
+                            // Extract points required from the onclick attribute (crude but effective)
+                            const onclickAttr = btn.getAttribute('onclick');
+                            const match = onclickAttr.match(/,\s*(\d+),\s*'/);
+                            if (match) {
+                                const ptsReq = parseInt(match[1]);
+                                if (ptsReq > currentPoints) {
+                                    btn.disabled = true;
+                                }
+                            }
+                        });
+
                     } else {
                         alert(data.message);
                         confirmExchangeBtn.disabled = false;
