@@ -143,6 +143,46 @@ $userPoints = $userIsLoggedIn ? $_SESSION['user_points'] : 0;
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        /* --- Receipt Modal Styles --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 10002;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 1.5rem;
+            z-index: 10003;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform: scale(0.95);
+            box-shadow: 0 1.5rem 3rem rgba(0, 66, 37, 0.15);
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+        }
     </style>
 </head>
 <body>
@@ -278,17 +318,34 @@ $userPoints = $userIsLoggedIn ? $_SESSION['user_points'] : 0;
         function updateExchangeUI() {
             const totalCount = exchangeCart.reduce((sum, item) => sum + item.quantity, 0);
             const totalPoints = exchangeCart.reduce((sum, item) => sum + (item.points * item.quantity), 0);
+            
+            // Check for stock insufficiency
+            let anyOverStock = false;
+            exchangeCart.forEach(item => {
+                const stockEl = document.getElementById(`stock-${item.id}`);
+                if (stockEl) {
+                    const available = parseInt(stockEl.textContent);
+                    if (!isNaN(available) && item.quantity > available) {
+                        anyOverStock = true;
+                    }
+                }
+            });
 
             exchangeCount.textContent = totalCount;
             exchangeCartBtn.style.display = totalCount > 0 ? 'flex' : 'none';
             exchangeTotalPoints.textContent = totalPoints.toLocaleString() + ' Pts';
 
-            // Check if user has enough points
+            // Check if user has enough points or enough stock
             if (totalPoints > currentPoints) {
                 exchangeTotalPoints.style.color = '#dc2626';
                 confirmExchangeBtn.disabled = true;
                 confirmExchangeBtn.style.opacity = '0.5';
                 confirmExchangeBtn.textContent = 'Insufficient Points';
+            } else if (anyOverStock) {
+                exchangeTotalPoints.style.color = '#e6b325';
+                confirmExchangeBtn.disabled = true;
+                confirmExchangeBtn.style.opacity = '0.5';
+                confirmExchangeBtn.textContent = 'Insufficient Stock';
             } else {
                 exchangeTotalPoints.style.color = '#e6b325';
                 confirmExchangeBtn.disabled = false;
@@ -309,8 +366,13 @@ $userPoints = $userIsLoggedIn ? $_SESSION['user_points'] : 0;
                 return;
             }
 
-            exchangeItemsContainer.innerHTML = exchangeCart.map(item => `
-                <div class="cart-item">
+            exchangeItemsContainer.innerHTML = exchangeCart.map(item => {
+                const stockEl = document.getElementById(`stock-${item.id}`);
+                const available = stockEl ? parseInt(stockEl.textContent) : 999;
+                const isOverStock = item.quantity > available;
+
+                return `
+                <div class="cart-item" style="flex-wrap: wrap;">
                     <img src="${item.img}" alt="${item.name}" class="cart-item-img">
                     <div class="cart-item-details">
                         <div class="cart-item-title">${item.name}</div>
@@ -318,12 +380,13 @@ $userPoints = $userIsLoggedIn ? $_SESSION['user_points'] : 0;
                     </div>
                     <div class="cart-item-actions">
                         <button class="qty-btn" onclick="changeQty(${item.id}, -1)"><i class="fa-solid fa-minus"></i></button>
-                        <span>${item.quantity}</span>
-                        <button class="qty-btn" onclick="changeQty(${item.id}, 1)"><i class="fa-solid fa-plus"></i></button>
+                        <span style="${isOverStock ? 'color: #dc2626; font-weight: 700;' : ''}">${item.quantity}</span>
+                        <button class="qty-btn" onclick="changeQty(${item.id}, 1)" ${isOverStock ? 'style="opacity: 0.5;"' : ''}><i class="fa-solid fa-plus"></i></button>
                         <button class="remove-item" onclick="removeExchangeItem(${item.id})"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function removeExchangeItem(id) {
@@ -417,14 +480,16 @@ $userPoints = $userIsLoggedIn ? $_SESSION['user_points'] : 0;
                         }
                         
                         // 5. Reset UI State
+                        const receiptItems = [...exchangeCart];
                         exchangeCart = [];
                         updateExchangeUI();
                         closeExchangeModal();
+
+                        // 6. Show Receipt
+                        showExchangeReceipt(data, receiptItems);
                         
-                        // 6. Refresh order button states Site-wide (if points dropped)
-                        // This will disable buttons where points are no longer sufficient
+                        // 7. Refresh order button states Site-wide
                         document.querySelectorAll('.redeem-btn').forEach(btn => {
-                            // Extract points required from the onclick attribute (crude but effective)
                             const onclickAttr = btn.getAttribute('onclick');
                             const match = onclickAttr.match(/,\s*(\d+),\s*'/);
                             if (match) {
@@ -449,7 +514,99 @@ $userPoints = $userIsLoggedIn ? $_SESSION['user_points'] : 0;
                 });
             }
         };
+
+        // --- Post-Transaction Receipt Logic ---
+        const receiptModalOverlay = document.getElementById('receiptModalOverlay');
+        const exchangeReceiptModal = document.getElementById('exchangeReceiptModal');
+        const closeReceiptModal = document.getElementById('closeReceiptModal');
+
+        function showExchangeReceipt(data, items) {
+            const receiptOrderId = document.getElementById('receiptOrderId');
+            const receiptDate = document.getElementById('receiptDate');
+            const receiptPointsSpent = document.getElementById('receiptPointsSpent');
+            const receiptItemsList = document.getElementById('receiptItemsList');
+
+            if (receiptOrderId) receiptOrderId.textContent = `#${data.exchange_id || 'EXCH' + Date.now().toString().slice(-4)}`;
+            if (receiptDate) receiptDate.textContent = new Date().toLocaleString('en-US', { 
+                month: 'short', day: '2-digit', year: 'numeric', 
+                hour: '2-digit', minute: '2-digit', hour12: true 
+            });
+            
+            const totalPoints = items.reduce((sum, item) => sum + (item.points * item.quantity), 0);
+            if (receiptPointsSpent) receiptPointsSpent.textContent = totalPoints.toLocaleString() + ' Pts';
+
+            if (receiptItemsList) {
+                receiptItemsList.innerHTML = items.map(item => `
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.9rem;">
+                        <span style="color: #333;">${item.name} <span style="color: #999; font-size: 0.8rem;">x${item.quantity}</span></span>
+                        <span style="font-weight: 500; color: #dc2626;">-${(item.points * item.quantity).toLocaleString()} Pts</span>
+                    </div>
+                `).join('');
+            }
+
+            if (receiptModalOverlay && exchangeReceiptModal) {
+                receiptModalOverlay.classList.add('active');
+                exchangeReceiptModal.classList.add('active');
+            }
+        }
+
+        if (closeReceiptModal) {
+            closeReceiptModal.onclick = () => {
+                if (receiptModalOverlay && exchangeReceiptModal) {
+                    receiptModalOverlay.classList.remove('active');
+                    exchangeReceiptModal.classList.remove('active');
+                    location.reload();
+                }
+            };
+        }
     </script>
     <script src="assets/js/home.view.js"></script>
+    <!-- Post-Transaction Receipt Modal -->
+    <div class="modal-overlay" id="receiptModalOverlay" style="z-index: 10002;">
+        <div class="modal" id="exchangeReceiptModal" style="max-width: 450px; width: 95%; padding: 0; background: #fff; overflow: hidden;">
+            <div style="background: var(--cozy-green); color: white; padding: 1.5rem; text-align: center;">
+                <h3 style="margin: 0; font-size: 1.25rem;">Exchange Receipt</h3>
+                <p style="margin: 0.5rem 0 0 0; font-size: 0.85rem; opacity: 0.9;">Cozy Sip Rewards Program</p>
+            </div>
+            <div style="padding: 1.5rem; background: #fff;">
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <i class="fa-solid fa-gift" style="font-size: 2.5rem; color: #4ade80;"></i>
+                    <p style="margin: 0.5rem 0 0 0; font-weight: 600; color: #333;">Redemption Successful!</p>
+                </div>
+                
+                <div style="border-bottom: 1px dashed #ddd; margin-bottom: 1rem; padding-bottom: 0.8rem; font-size: 0.85rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+                        <span style="color: #666;">Transaction ID:</span>
+                        <span id="receiptOrderId" style="font-weight: 600;">#EXCH001</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+                        <span style="color: #666;">Date:</span>
+                        <span id="receiptDate">--</span>
+                    </div>
+                </div>
+
+                <div id="receiptItemsList" style="margin-bottom: 1rem; max-height: 200px; overflow-y: auto;">
+                    <!-- Items will be injected here -->
+                </div>
+
+                <div style="border-top: 1px solid #eee; padding-top: 1rem; margin-top: 1rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span style="font-weight: 600; color: #333;">Total Points Spent:</span>
+                        <span id="receiptPointsSpent" style="font-weight: 700; color: #dc2626; font-size: 1.1rem;">0 Pts</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #004225;">
+                        <span style="font-weight: 500;">Status:</span>
+                        <span style="font-weight: 600;">Redeemed</span>
+                    </div>
+                </div>
+            </div>
+            <div style="padding: 1.5rem; padding-top: 0; text-align: center;">
+                <p style="margin: 0 0 1.5rem 0; font-size: 0.75rem; color: #999; line-height: 1.4;">
+                    Your items are ready for pickup. <br> Show this receipt to our staff!
+                </p>
+                <button id="closeReceiptModal" style="width: 100%; padding: 0.8rem; background: var(--cozy-green); color: white; border: none; border-radius: 0.8rem; font-weight: 600; cursor: pointer;">Great, Thanks!</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

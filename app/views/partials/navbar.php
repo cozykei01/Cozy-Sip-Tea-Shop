@@ -9,8 +9,8 @@
             <li><a href="index.php?page=home" class="<?php echo ($activePage === 'home') ? 'active' : ''; ?>">Home</a></li>
             <li><a href="index.php?page=menu" class="<?php echo ($activePage === 'menu') ? 'active' : ''; ?>">Menu</a></li>
             <li><a href="index.php?page=exchange" class="<?php echo ($activePage === 'exchange') ? 'active' : ''; ?>">Exchange</a></li>
-            <li><a href="#" class="<?php echo ($activePage === 'about') ? 'active' : ''; ?>">About</a></li>
-            <li><a href="#" class="<?php echo ($activePage === 'contact') ? 'active' : ''; ?>">Contact</a></li>
+            <li><a href="index.php?page=about" class="<?php echo ($activePage === 'about') ? 'active' : ''; ?>">About</a></li>
+            <li><a href="index.php?page=contact" class="<?php echo ($activePage === 'contact') ? 'active' : ''; ?>">Contact</a></li>
         </ul>
 
         <div class="user-actions">
@@ -166,6 +166,32 @@ document.addEventListener('DOMContentLoaded', function() {
         if (diffInSeconds < 86400) return Math.floor(diffInSeconds / 3600) + 'h ago';
         
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    // --- Profile Dropdown Logic (Unified) ---
+    const profileDropdownBtn = document.getElementById('profileDropdownBtn');
+    const profileDropdown = document.getElementById('profileDropdown');
+
+    if (profileDropdownBtn && profileDropdown) {
+        profileDropdownBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            profileDropdown.classList.toggle('active');
+            
+            // Close notification dropdown if open
+            if (notiDropdown) notiDropdown.classList.remove('active');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!profileDropdownBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
+                profileDropdown.classList.remove('active');
+            }
+        });
+
+        // Prevent closing when clicking inside the dropdown
+        profileDropdown.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
     }
 });
 </script>

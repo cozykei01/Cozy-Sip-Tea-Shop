@@ -28,24 +28,28 @@ class Order {
             $detailStmt = $this->db->prepare("INSERT INTO order_details (order_id, product_id, quantity, unit_price, total_amount) 
                                               VALUES (?, ?, ?, ?, ?)");
             foreach ($cart as $item) {
-                $itemTotal = $item['price'] * $item['quantity'];
+                // Ensure price and quantity are numeric
+                $price = floatval($item['price']);
+                $quantity = intval($item['quantity']);
+                $itemTotal = $price * $quantity;
                 $detailStmt->execute([
                     $orderId, 
                     $item['id'], 
-                    $item['quantity'], 
-                    $item['price'], 
+                    $quantity, 
+                    $price, 
                     $itemTotal
                 ]);
 
-                // Optional: Update product stock in products table
+                // Update product stock in products table
                 $updateStockStmt = $this->db->prepare("UPDATE products SET quantity = quantity - ? WHERE product_id = ?");
-                $updateStockStmt->execute([$item['quantity'], $item['id']]);
+                $updateStockStmt->execute([$quantity, $item['id']]);
             }
 
             // 3. Insert into payments table
+            $status = ($paymentMethod === 'cod') ? 'Pending' : 'Completed';
             $paymentStmt = $this->db->prepare("INSERT INTO payments (order_id, payment_method, payment_status, payment_date) 
-                                               VALUES (?, ?, 'Completed', NOW())");
-            $paymentStmt->execute([$orderId, $paymentMethod]);
+                                               VALUES (?, ?, ?, NOW())");
+            $paymentStmt->execute([$orderId, $paymentMethod, $status]);
 
             // 4. Update user's point balance
             $updatePointsStmt = $this->db->prepare("UPDATE users SET point_balance = point_balance + ? WHERE user_id = ?");

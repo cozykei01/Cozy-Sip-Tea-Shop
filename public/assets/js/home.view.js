@@ -9,6 +9,20 @@ const addToCartButtons = document.querySelectorAll('.add-to-cart');
 
 let cart = [];
 
+// Toast Notification Function
+function showToast(message, icon = 'fa-check-circle') {
+    const toast = document.createElement('div');
+    toast.style = "position: fixed; bottom: 100px; right: 20px; background: #004225; color: white; padding: 1rem 2rem; border-radius: 2rem; z-index: 10000; animation: fadeInUp 0.5s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600;";
+    toast.innerHTML = `<i class="fa-solid ${icon}"></i> ${message}`;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(20px)';
+        toast.style.transition = 'all 0.5s ease';
+        setTimeout(() => toast.remove(), 500);
+    }, 3000);
+}
+
 // Open Modal
 if (floatingCart) {
     floatingCart.addEventListener('click', () => {
@@ -52,11 +66,7 @@ addToCartButtons.forEach(button => {
         updateCartCount();
         
         // toast notification
-        const toast = document.createElement('div');
-        toast.style = "position: fixed; bottom: 100px; right: 20px; background: #004225; color: white; padding: 1rem 2rem; border-radius: 2rem; z-index: 10000; animation: fadeInUp 0.5s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600;";
-        toast.innerHTML = `<i class="fa-solid fa-check-circle"></i> Added ${name} to cart`;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
+        showToast(`Added ${name} to cart`);
 
         // Small animation effect on click
         const icon = button.querySelector('i');
@@ -113,12 +123,24 @@ function renderCart() {
     cartItemsContainer.innerHTML = '';
     let total = 0;
     let totalPoints = 0;
+    let anyOverStock = false;
 
     cart.forEach(item => {
         const itemTotal = item.price * item.quantity;
         const itemPts = item.points * item.quantity;
         total += itemTotal;
         totalPoints += itemPts;
+
+        // Stock Validation
+        let isOverStock = false;
+        const qtyElement = document.getElementById(`product-qty-${item.id}`);
+        if (qtyElement) {
+            const availableStock = parseInt(qtyElement.textContent);
+            if (!isNaN(availableStock) && item.quantity > availableStock) {
+                isOverStock = true;
+                anyOverStock = true;
+            }
+        }
 
         const cartItemHTML = `
             <div class="cart-item">
@@ -130,14 +152,28 @@ function renderCart() {
                 </div>
                 <div class="cart-item-actions">
                     <button class="qty-btn minus" data-id="${item.id}"><i class="fa-solid fa-minus"></i></button>
-                    <span>${item.quantity}</span>
-                    <button class="qty-btn plus" data-id="${item.id}"><i class="fa-solid fa-plus"></i></button>
+                    <span style="${isOverStock ? 'color: #dc2626; font-weight: 700;' : ''}">${item.quantity}</span>
+                    <button class="qty-btn plus" data-id="${item.id}" ${isOverStock ? 'style="opacity: 0.5;"' : ''}><i class="fa-solid fa-plus"></i></button>
                     <button class="remove-item" data-id="${item.id}"><i class="fa-solid fa-trash"></i></button>
                 </div>
             </div>
         `;
         cartItemsContainer.insertAdjacentHTML('beforeend', cartItemHTML);
     });
+
+    // Handle checkout button state
+    const checkoutBtn = document.getElementById('proceedToCheckoutBtn');
+    if (checkoutBtn) {
+        if (anyOverStock) {
+            checkoutBtn.disabled = true;
+            checkoutBtn.style.opacity = '0.5';
+            checkoutBtn.textContent = 'Insufficient Stock';
+        } else {
+            checkoutBtn.disabled = false;
+            checkoutBtn.style.opacity = '1';
+            checkoutBtn.textContent = 'Proceed to Checkout';
+        }
+    }
 
     cartTotalPriceElement.textContent = total.toLocaleString() + ' Ks';
     
@@ -194,16 +230,31 @@ function bindCartItemEvents() {
     });
 }
 
-// --- Checkout & Payment Modal Logic ---
+// --- Unified Checkout & Receipt Modal Logic ---
 const initCheckout = () => {
     const proceedToCheckoutBtn = document.getElementById('proceedToCheckoutBtn');
-    const paymentModalOverlay = document.getElementById('paymentModalOverlay');
-    const paymentModal = document.getElementById('paymentModal');
-    const closePaymentModal = document.getElementById('closePaymentModal');
+    const checkoutReceiptOverlay = document.getElementById('checkoutReceiptOverlay');
+    const checkoutReceiptModal = document.getElementById('checkoutReceiptModal');
+    const closeCheckoutModal = document.getElementById('closeCheckoutModal');
     const confirmPaymentBtn = document.getElementById('confirmPaymentBtn');
+    const closeReceiptModal = document.getElementById('closeReceiptModal');
+
+    // UI Elements for Toggleable states
+    const modalTitle = document.getElementById('modalTitle');
+    const successStateHeader = document.getElementById('successStateHeader');
+    const successStateFooter = document.getElementById('successStateFooter');
+    const receiptIdRow = document.getElementById('receiptIdRow');
+    const receiptPaymentRow = document.getElementById('receiptPaymentRow');
+    const paymentSelectionSection = document.getElementById('paymentSelectionSection');
+    
+    // Data Elements
+    const receiptOrderId = document.getElementById('receiptOrderId');
+    const receiptPayment = document.getElementById('receiptPayment');
+    const receiptTotal = document.getElementById('receiptTotal');
+    const receiptPoints = document.getElementById('receiptPoints');
+    const receiptItemsList = document.getElementById('receiptItemsList');
 
     if (proceedToCheckoutBtn) {
-        // Remove existing listener if any to avoid duplicates
         const newBtn = proceedToCheckoutBtn.cloneNode(true);
         proceedToCheckoutBtn.parentNode.replaceChild(newBtn, proceedToCheckoutBtn);
         
@@ -217,28 +268,70 @@ const initCheckout = () => {
                 alert("Your cart is empty!");
                 return;
             }
-            // Close Cart Modal and Open Payment Modal
-            closeModal();
+
+            // 1. Populate Summary Data (Step 1)
+            const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const earnedPoints = cart.reduce((sum, item) => sum + (item.points * item.quantity), 0);
+
+            if (receiptTotal) receiptTotal.textContent = totalAmount.toLocaleString() + ' Ks';
+            if (receiptPoints) receiptPoints.textContent = '+' + earnedPoints + ' Pts';
+            if (receiptItemsList) {
+                receiptItemsList.innerHTML = cart.map(item => `
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.9rem;">
+                        <span style="color: #333;">${item.name} <span style="color: #999; font-size: 0.8rem;">x${item.quantity}</span></span>
+                        <span style="font-weight: 500;">${(item.price * item.quantity).toLocaleString()} Ks</span>
+                    </div>
+                `).join('');
+            }
+
+            // 2. Reset Modal to "Selection" State
+            if (modalTitle) modalTitle.textContent = "Order Summary";
+            if (successStateHeader) successStateHeader.style.display = 'none';
+            if (successStateFooter) successStateFooter.style.display = 'none';
+            if (receiptIdRow) receiptIdRow.style.display = 'none';
+            if (receiptPaymentRow) receiptPaymentRow.style.display = 'none';
+            if (paymentSelectionSection) paymentSelectionSection.style.display = 'block';
+            if (confirmPaymentBtn) {
+                confirmPaymentBtn.style.display = 'block';
+                confirmPaymentBtn.disabled = true;
+                confirmPaymentBtn.textContent = 'Confirm Order';
+            }
+            
+            const options = document.querySelectorAll('.payment-option');
+            options.forEach(opt => opt.classList.remove('selected'));
+
+            // 3. Open Modal
+            closeModal(); // Close Cart
             setTimeout(() => {
-                if (paymentModalOverlay && paymentModal) {
-                    paymentModalOverlay.classList.add('active');
-                    paymentModal.classList.add('active');
+                if (checkoutReceiptOverlay && checkoutReceiptModal) {
+                    checkoutReceiptOverlay.classList.add('active');
+                    checkoutReceiptModal.classList.add('active');
                 }
             }, 300);
         });
     }
 
-    const closePayment = () => {
-        if (paymentModalOverlay && paymentModal) {
-            paymentModalOverlay.classList.remove('active');
-            paymentModal.classList.remove('active');
+    const closeAll = () => {
+        if (checkoutReceiptOverlay && checkoutReceiptModal) {
+            checkoutReceiptOverlay.classList.remove('active');
+            checkoutReceiptModal.classList.remove('active');
         }
     };
 
-    if (closePaymentModal) closePaymentModal.onclick = closePayment;
-    if (paymentModalOverlay) paymentModalOverlay.onclick = closePayment;
+    if (closeCheckoutModal) closeCheckoutModal.onclick = closeAll;
+    if (checkoutReceiptOverlay) checkoutReceiptOverlay.onclick = (e) => {
+        if (e.target === checkoutReceiptOverlay) closeAll();
+    };
 
-    // Use event delegation for payment options
+    // Close and Refresh on final success
+    if (closeReceiptModal) {
+        closeReceiptModal.onclick = () => {
+            closeAll();
+            location.reload();
+        };
+    }
+
+    // Payment Selection logic
     document.addEventListener('click', (e) => {
         const option = e.target.closest('.payment-option');
         if (option) {
@@ -249,19 +342,17 @@ const initCheckout = () => {
         }
     });
 
+    // Confirm Payment Logic (Transitions to Success State)
     if (confirmPaymentBtn) {
         confirmPaymentBtn.onclick = () => {
             const selectedOption = document.querySelector('.payment-option.selected');
             if (!selectedOption) return;
             
             const method = selectedOption.getAttribute('data-method');
-            
-            // Calculate totals for backend
             const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             const totalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
             const earnedPoints = cart.reduce((sum, item) => sum + (item.points * item.quantity), 0);
 
-            // Prepare order data
             const orderData = {
                 cart: cart,
                 payment_method: method,
@@ -270,21 +361,18 @@ const initCheckout = () => {
                 earned_points: earnedPoints
             };
 
-            // Disable button during processing
             confirmPaymentBtn.disabled = true;
             confirmPaymentBtn.textContent = 'Processing...';
 
             fetch('index.php?page=checkout', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(orderData)
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // 1. Update Notification Badge IMMEDIATELY (Zero Latency)
+                    // Update Notification Badge
                     if (data.unread_count !== undefined) {
                         const notiBadge = document.getElementById('notiBadge');
                         if (notiBadge) {
@@ -293,43 +381,33 @@ const initCheckout = () => {
                         }
                     }
 
-                    // 2. Trigger background notification list fetch
-                    if (typeof window.fetchNotifications === 'function') {
-                        console.log('Triggering notification fetch...');
-                        window.fetchNotifications();
-                    } else {
-                        console.error('window.fetchNotifications is not defined!');
+                    // --- TRANSITION TO SUCCESS STATE (Step 2) ---
+                    if (modalTitle) modalTitle.textContent = "Order Receipt";
+                    if (successStateHeader) successStateHeader.style.display = 'block';
+                    if (successStateFooter) successStateFooter.style.display = 'block';
+                    if (receiptIdRow) {
+                        receiptIdRow.style.display = 'flex';
+                        if (receiptOrderId) receiptOrderId.textContent = `#${data.order_id || '0000'}`;
                     }
-
-                    // Success message (Non-blocking toast)
-                    const toast = document.createElement('div');
-                    toast.style = "position: fixed; top: 100px; left: 0; right: 0; width: fit-content; margin: 0 auto; background: #004225; color: white; padding: 1rem 2rem; border-radius: 2rem; z-index: 10001; animation: fadeInUp 0.5s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-weight: 600; text-align: center;";
-                    toast.innerHTML = `<i class="fa-solid fa-check-circle"></i> Order confirmed with ${method.toUpperCase()}! Thank you.`;
-                    document.body.appendChild(toast);
-                    setTimeout(() => toast.remove(), 4000);
-                    
-                    // Update Points Display in Navbar
-                    const pointsDisplay = document.getElementById('userPointsDisplay');
-                    if (pointsDisplay) {
-                        pointsDisplay.textContent = data.new_points + ' Pts';
+                    if (receiptPaymentRow) {
+                        receiptPaymentRow.style.display = 'flex';
+                        if (receiptPayment) receiptPayment.textContent = method;
                     }
+                    if (paymentSelectionSection) paymentSelectionSection.style.display = 'none';
+                    if (confirmPaymentBtn) confirmPaymentBtn.style.display = 'none';
 
-                    // Reset cart and UI
+                    // Clear cart
                     cart = [];
                     updateCartCount();
-                    closePayment();
-                    
-                    // Optional: Redirect or refresh to update all session states
-                    // window.location.reload(); 
                 } else {
-                    alert(data.message || 'Failed to process order. Please try again.');
+                    alert(data.message || 'Payment failed. Please try again.');
                     confirmPaymentBtn.disabled = false;
                     confirmPaymentBtn.textContent = 'Confirm Order';
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('An error occurred. Please try again later.');
+                alert('An error occurred. Please try again.');
                 confirmPaymentBtn.disabled = false;
                 confirmPaymentBtn.textContent = 'Confirm Order';
             });
@@ -339,29 +417,6 @@ const initCheckout = () => {
 
 // Initialize on load
 initCheckout();
-
-// Profile Dropdown Logic
-const profileDropdownBtn = document.getElementById('profileDropdownBtn');
-const profileDropdown = document.getElementById('profileDropdown');
-
-if (profileDropdownBtn && profileDropdown) {
-    profileDropdownBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        profileDropdown.classList.toggle('active');
-    });
-
-    // Close dropdown when clicking outside
-    document.addEventListener('click', (e) => {
-        if (!profileDropdownBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
-            profileDropdown.classList.remove('active');
-        }
-    });
-
-    // Prevent closing when clicking inside the dropdown (just in case)
-    profileDropdown.addEventListener('click', (e) => {
-        e.stopPropagation();
-    });
-}
 
 // --- Menu Page Search & Filter Functionality ---
 const searchInput = document.querySelector('.search-input');
@@ -496,3 +551,113 @@ if (allSections.length > 0) {
     }
 }
 
+// --- Favorites (Add to Favorite) Logic ---
+function initFavorites() {
+    const favoriteButtons = document.querySelectorAll('.wishlist-btn');
+    
+    // 1. Fetch initial favorite state if logged in
+    if (userIsLoggedIn) {
+        fetch('index.php?page=get_favorites')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.favorites) {
+                    const favoriteIds = data.favorites.map(String);
+                    document.querySelectorAll('.product-card').forEach(card => {
+                        const productId = card.dataset.id;
+                        if (favoriteIds.includes(productId)) {
+                            const heart = card.querySelector('.wishlist-btn i');
+                            if (heart) {
+                                heart.classList.remove('fa-regular');
+                                heart.classList.add('fa-solid');
+                                heart.style.color = '#dc2626'; // Red for solid heart
+                            }
+                        }
+                    });
+                }
+            })
+            .catch(err => console.error('Error fetching favorites:', err));
+    }
+
+    // 2. Add Click Listeners
+    favoriteButtons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (!userIsLoggedIn) {
+                if (confirm("Please login to add items to your favorites. Login now?")) {
+                    window.location.href = "index.php?page=login";
+                }
+                return;
+            }
+
+            const card = this.closest('.product-card');
+            const productId = card.dataset.id;
+            const heart = this.querySelector('i');
+
+            // Visual Toggle (Optimistic UI)
+            const isAdding = heart.classList.contains('fa-regular');
+            if (isAdding) {
+                heart.classList.remove('fa-regular');
+                heart.classList.add('fa-solid');
+                heart.style.color = '#dc2626';
+            } else {
+                heart.classList.remove('fa-solid');
+                heart.classList.add('fa-regular');
+                heart.style.color = '';
+            }
+
+            // Sync with Server
+            fetch('index.php?page=favorite_toggle', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productId: productId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // If server confirms success, show toast
+                    if (typeof showToast === 'function') {
+                        // For added, use server's descriptive message
+                        if (data.status === 'added') {
+                            showToast(data.message, 'fa-heart');
+                        }
+                    }
+                    // Refresh system notifications
+                    if (typeof window.fetchNotifications === 'function') {
+                        window.fetchNotifications();
+                    }
+                } else {
+                    // Revert UI on failure
+                    if (isAdding) {
+                        heart.classList.add('fa-regular');
+                        heart.classList.remove('fa-solid');
+                        heart.style.color = '';
+                    } else {
+                        heart.classList.add('fa-solid');
+                        heart.classList.remove('fa-regular');
+                        heart.style.color = '#dc2626';
+                    }
+                    alert(data.message || "Failed to update favorites");
+                }
+            })
+            .catch(err => {
+                console.error('Favorite error:', err);
+                // Revert UI on error (assuming it was an add, revert to regular)
+                if (isAdding) {
+                    heart.classList.add('fa-regular');
+                    heart.classList.remove('fa-solid');
+                    heart.style.color = '';
+                } else { // If it was a remove, revert to solid
+                    heart.classList.add('fa-solid');
+                    heart.classList.remove('fa-regular');
+                    heart.style.color = '#dc2626';
+                }
+                alert("An error occurred while updating favorites.");
+            });
+        });
+    });
+}
+
+// Initialize favorites
+initFavorites();

@@ -368,6 +368,7 @@ $activePage = 'profile';
             <div class="tabs">
                 <button class="tab-btn active" id="ordersTabBtn">Order History</button>
                 <button class="tab-btn" id="exchangesTabBtn">Exchange History</button>
+                <button class="tab-btn" id="favoritesTabBtn">My Favorites</button>
             </div>
 
             <!-- Orders List -->
@@ -422,6 +423,44 @@ $activePage = 'profile';
                     </div>
                 <?php endif; ?>
             </div>
+            <!-- Favorites List -->
+            <div id="favoritesContent" class="history-list" style="display: none;">
+                <?php if (empty($favorites)): ?>
+                    <div style="text-align: center; padding: 3rem 0; width: 100%;">
+                        <i class="fa-solid fa-heart-crack" style="font-size: 3.5rem; color: #eee; margin-bottom: 1.5rem; display: block;"></i>
+                        <p style="color: #888; font-size: 1.1rem;">Your favorite list is empty. Heart some items!</p>
+                        <a href="index.php?page=menu" style="display:inline-block; margin-top: 1.5rem; background: var(--cozy-green); color: white; padding: 0.8rem 2rem; border-radius: 2rem; text-decoration: none; font-weight: 700;">Explore Menu</a>
+                    </div>
+                <?php else: ?>
+                    <div style="width: 100%;">
+                    <?php foreach ($favorites as $fav): ?>
+                        <?php 
+                            $img = 'https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&q=80&w=500'; // Default
+                            $name = strtolower($fav['product_name']);
+                            if (strpos($name, 'espresso') !== false) $img = 'https://images.unsplash.com/photo-1510591509098-f4fdc6d0ff04?auto=format&fit=crop&q=80&w=500';
+                            if (strpos($name, 'americano') !== false) $img = 'https://images.unsplash.com/photo-1551030173-122aabc4489c?auto=format&fit=crop&q=80&w=500';
+                            if (strpos($name, 'latte') !== false) $img = 'https://images.unsplash.com/photo-1570968915860-54d5c301fa9f?auto=format&fit=crop&q=80&w=500';
+                            if (strpos($name, 'cappuccino') !== false || strpos($name, 'macchiato') !== false) $img = 'https://images.unsplash.com/photo-1534778101976-62847782c213?auto=format&fit=crop&q=80&w=500';
+                        ?>
+                        <div class="history-item" id="fav-item-<?php echo $fav['product_id']; ?>">
+                            <div class="history-info" style="display: flex; align-items: center; gap: 1rem;">
+                                <img src="<?php echo $img; ?>" alt="<?php echo htmlspecialchars($fav['product_name']); ?>" style="width: 50px; height: 50px; border-radius: 0.5rem; object-fit: cover;">
+                                <div>
+                                    <h4><?php echo htmlspecialchars($fav['product_name']); ?></h4>
+                                    <span class="history-date">Added on <?php echo date('M d, Y', strtotime($fav['favorited_at'])); ?></span>
+                                </div>
+                            </div>
+                            <div class="history-amount">
+                                <span class="amount-value"><?php echo number_format($fav['price'], 0); ?> Ks</span>
+                                <button class="remove-fav-btn" data-id="<?php echo $fav['product_id']; ?>" style="background: none; border: none; color: #ff4d4d; cursor: pointer; font-size: 0.9rem; margin-top: 5px; font-weight: 600;">
+                                    <i class="fa-solid fa-trash-can"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
         </section>
     </div>
 
@@ -452,21 +491,36 @@ $activePage = 'profile';
     <script>
         const ordersTabBtn = document.getElementById('ordersTabBtn');
         const exchangesTabBtn = document.getElementById('exchangesTabBtn');
+        const favoritesTabBtn = document.getElementById('favoritesTabBtn');
         const ordersContent = document.getElementById('ordersContent');
         const exchangesContent = document.getElementById('exchangesContent');
+        const favoritesContent = document.getElementById('favoritesContent');
 
         ordersTabBtn.onclick = () => {
             ordersTabBtn.classList.add('active');
             exchangesTabBtn.classList.remove('active');
+            favoritesTabBtn.classList.remove('active');
             ordersContent.style.display = 'flex';
             exchangesContent.style.display = 'none';
+            favoritesContent.style.display = 'none';
         };
 
         exchangesTabBtn.onclick = () => {
             exchangesTabBtn.classList.add('active');
             ordersTabBtn.classList.remove('active');
+            favoritesTabBtn.classList.remove('active');
             exchangesContent.style.display = 'flex';
             ordersContent.style.display = 'none';
+            favoritesContent.style.display = 'none';
+        };
+
+        favoritesTabBtn.onclick = () => {
+            favoritesTabBtn.classList.add('active');
+            ordersTabBtn.classList.remove('active');
+            exchangesTabBtn.classList.remove('active');
+            favoritesContent.style.display = 'flex';
+            ordersContent.style.display = 'none';
+            exchangesContent.style.display = 'none';
         };
 
         // Profile Image Upload
@@ -575,6 +629,42 @@ $activePage = 'profile';
                 saveProfileBtn.textContent = 'Save Changes';
             });
         };
+
+        // Remove favorite functionality
+        document.querySelectorAll('.remove-fav-btn').forEach(btn => {
+            btn.onclick = function() {
+                const productId = this.dataset.id;
+                const itemRow = document.getElementById(`fav-item-${productId}`);
+
+                if (confirm('Remove this item from your favorites?')) {
+                    fetch('index.php?page=favorite_toggle', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ productId: productId })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            if (itemRow) {
+                                itemRow.style.opacity = '0';
+                                setTimeout(() => itemRow.remove(), 300);
+                            }
+                            // Show toast notification
+                            if (typeof showToast === 'function') {
+                                showToast(data.message, 'fa-trash-can');
+                            }
+                            // Refresh system notifications
+                            if (typeof window.fetchNotifications === 'function') {
+                                window.fetchNotifications();
+                            }
+                        } else {
+                            alert(data.message);
+                        }
+                    })
+                    .catch(err => console.error('Error removing favorite:', err));
+                }
+            };
+        });
     </script>
 </body>
 </html>

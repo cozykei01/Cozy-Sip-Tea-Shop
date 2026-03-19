@@ -348,6 +348,9 @@ body {
     font-size: 1.25rem;
     color: var(--cozy-text, #2D3E33);
     margin-bottom: 0.5rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .product-desc {

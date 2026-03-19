@@ -38,34 +38,45 @@ class OrderController {
             return;
         }
 
-        $orderId = $this->orderModel->createOrder(
-            $userId, 
-            $cart, 
-            $totalAmount, 
-            $totalQuantity, 
-            $earnedPoints, 
-            $paymentMethod
-        );
+        try {
+            // Create Order
+            $orderId = $this->orderModel->createOrder(
+                $userId, 
+                $cart, 
+                $totalAmount, 
+                $totalQuantity, 
+                $earnedPoints, 
+                $paymentMethod
+            );
 
-        if ($orderId) {
-            // Update session points for real-time display in navbar
-            $_SESSION['user_points'] += $earnedPoints;
-            
-            // Create notification
-            require_once '../app/models/Notification.php';
-            $notification = new Notification($this->orderModel->getConnection()); // Assuming Order model has getConnection or use shared DB
-            $dateStr = date('M d, Y | h:i A');
-            $notification->create($userId, 'Payment Completed', "Your order #$orderId has been successfully placed at $dateStr.");
+            if ($orderId) {
+                // Update session points
+                $_SESSION['user_points'] = ($_SESSION['user_points'] ?? 0) + $earnedPoints;
+                
+                // Create notification (Non-blocking if possible)
+                try {
+                    require_once '../app/models/Notification.php';
+                    $notification = new Notification($this->orderModel->getConnection());
+                    $dateStr = date('M d, Y | h:i A');
+                    $notification->create($userId, 'Payment Successful', "Your order #$orderId has been successfully placed at $dateStr.");
+                    $unreadCount = $notification->countUnread($userId);
+                } catch (Exception $e) {
+                    $unreadCount = 0;
+                }
 
-            echo json_encode([
-                'success' => true, 
-                'message' => 'Order placed successfully!', 
-                'order_id' => $orderId,
-                'new_points' => $_SESSION['user_points'],
-                'unread_count' => $notification->countUnread($userId)
-            ]);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Failed to process order. Please try again.']);
+                echo json_encode([
+                    'success' => true, 
+                    'message' => 'Payment Successful!', 
+                    'order_id' => $orderId,
+                    'new_points' => $_SESSION['user_points'],
+                    'unread_count' => $unreadCount
+                ]);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Failed to process order. Please try again.']);
+            }
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Internal server error: ' . $e->getMessage()]);
         }
     }
 }

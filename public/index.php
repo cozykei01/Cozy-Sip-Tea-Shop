@@ -165,4 +165,26 @@ switch ($page) {
         $controller = new ProfileController($db);
         $controller->markNotificationsRead();
         break;
+    case 'favorite_toggle':
+        require_once '../app/controllers/FavoriteController.php';
+        $database = new Database();
+        $db = $database->getConnection();
+        $controller = new FavoriteController($db);
+        $controller->toggle();
+        break;
+    case 'get_favorites':
+        require_once '../app/controllers/FavoriteController.php';
+        $database = new Database();
+        $db = $database->getConnection();
+        $controller = new FavoriteController($db);
+        $controller->getFavorites();
+        break;
+    case 'about':
+        $activePage = 'about';
+        require_once '../app/views/about.view.php';
+        break;
+    case 'contact':
+        $activePage = 'contact';
+        require_once '../app/views/contact.view.php';
+        break;
 }

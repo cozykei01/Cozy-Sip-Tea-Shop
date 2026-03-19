@@ -3,16 +3,19 @@
 require_once '../app/models/User.php';
 require_once '../app/models/Order.php';
 require_once '../app/models/Exchange.php';
+require_once '../app/models/Favorite.php';
 
 class ProfileController {
     private $userModel;
     private $orderModel;
     private $exchangeModel;
+    private $favoriteModel;
 
     public function __construct($db) {
         $this->userModel = new User($db);
         $this->orderModel = new Order($db);
         $this->exchangeModel = new Exchange($db);
+        $this->favoriteModel = new Favorite($db);
     }
 
     /**
@@ -35,6 +38,7 @@ class ProfileController {
 
         $orders = $this->orderModel->getOrdersByUser($userId);
         $exchanges = $this->exchangeModel->getExchangesByUser($userId);
+        $favorites = $this->favoriteModel->getUserFavorites($userId);
 
         // Update session points just in case
         $_SESSION['user_points'] = $user['point_balance'];

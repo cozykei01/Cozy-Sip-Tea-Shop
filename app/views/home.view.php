@@ -7,10 +7,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="assets/css/style.css?v=<?php echo time(); ?>">
-    <link rel="stylesheet" href="assets/css/home.view.css">
+    <link rel="stylesheet" href="assets/css/home.view.css?v=<?php echo time(); ?>">
     <style>
         /* --- Payment Modal Styles --- */
-        .payment-modal-overlay {
+        /* --- Consolidated Checkout Modal Styles --- */
+        .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
@@ -18,38 +19,46 @@
             height: 100%;
             background: rgba(0, 0, 0, 0.4);
             backdrop-filter: blur(4px);
-            z-index: 2000;
+            z-index: 10002;
             opacity: 0;
             visibility: hidden;
             transition: 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .payment-modal-overlay.active {
+        .modal-overlay.active {
             opacity: 1;
             visibility: visible;
         }
 
-        .payment-modal {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -40%);
-            width: 95%;
-            max-width: 450px;
+        .modal {
             background: white;
             border-radius: 1.5rem;
-            z-index: 2001;
+            z-index: 10003;
             opacity: 0;
             visibility: hidden;
             transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            padding: 1.5rem;
+            transform: scale(0.95);
             box-shadow: 0 1.5rem 3rem rgba(0, 66, 37, 0.15);
         }
 
-        .payment-modal.active {
+        .modal.active {
             opacity: 1;
             visibility: visible;
-            transform: translate(-50%, -50%);
+            transform: scale(1);
+        }
+
+        .payment-option:hover {
+            background: #f8f9fa;
+            border-color: #ddd !important;
+        }
+
+        .payment-option.selected {
+            background: rgba(0, 66, 37, 0.05) !important;
+            border-color: var(--cozy-green) !important;
+            box-shadow: 0 0 0 1px var(--cozy-green);
         }
 
         .payment-header {
@@ -159,6 +168,7 @@
             cursor: not-allowed;
             opacity: 0.7;
         }
+
     </style>
     <script>
         const userIsLoggedIn = <?php echo isset($_SESSION['user_id']) ? 'true' : 'false'; ?>;
@@ -222,7 +232,7 @@
                             <?php if(!empty($product['event_price'])): ?>
                                 <span style="text-decoration: line-through; color: #999; font-size: 0.85rem;"><?php echo number_format($product['price'], 0); ?> Ks</span>
                             <?php endif; ?>
-                            <span style="color: var(--cozy-green); font-size: 0.85rem;">+<?php echo htmlspecialchars($product['earned_point_value']); ?> Pts</span>
+                            <span style="color: var(--cozy-green); font-size: 0.85rem;">+<?php echo htmlspecialchars($product['earned_point_value']); ?> Pts | Qty: <span id="product-qty-<?php echo $product['product_id']; ?>"><?php echo htmlspecialchars($product['quantity']); ?></span></span>
                         </p>
                         <div class="product-footer">
                             <span class="product-price"><?php echo number_format($finalPrice, 0); ?> Ks</span>
@@ -277,40 +287,85 @@
         </div>
     </div>
 
-    <!-- Payment Modal -->
-    <div class="payment-modal-overlay" id="paymentModalOverlay"></div>
-    <div class="payment-modal" id="paymentModal">
-        <div class="payment-header">
-            <h3>Select Payment Method</h3>
-            <button class="close-payment" id="closePaymentModal"><i class="fa-solid fa-times"></i></button>
-        </div>
-        <div class="payment-body">
-            <div class="payment-options">
-                <div class="payment-option" data-method="kpay">
-                    <div class="payment-icon"><i class="fa-solid fa-mobile-alt"></i></div>
-                    <div class="payment-info">
-                        <h4>KPay</h4>
-                        <p>KBZ Pay Digital Wallet</p>
+    <!-- Unified Checkout & Receipt Modal -->
+    <div class="modal-overlay" id="checkoutReceiptOverlay" style="z-index: 10002;">
+        <div class="modal" id="checkoutReceiptModal" style="max-width: 450px; width: 95%; padding: 0; background: #fff; overflow: hidden; position: relative;">
+            <!-- Modal Header -->
+            <div style="background: var(--cozy-green); color: white; padding: 1.5rem; text-align: center; position: relative;">
+                <button id="closeCheckoutModal" style="position: absolute; right: 1rem; top: 1rem; background: none; border: none; color: white; opacity: 0.7; cursor: pointer; font-size: 1.2rem;"><i class="fa-solid fa-times"></i></button>
+                <h3 id="modalTitle" style="margin: 0; font-size: 1.25rem;">Order Summary</h3>
+                <p style="margin: 0.5rem 0 0 0; font-size: 0.85rem; opacity: 0.9;">Cozy Sip Tea Shop</p>
+            </div>
+
+            <div style="padding: 1.5rem; background: #fff;">
+                <!-- Success Icon (Hidden by default) -->
+                <div id="successStateHeader" style="text-align: center; margin-bottom: 1.5rem; display: none;">
+                    <i class="fa-solid fa-check-circle" style="font-size: 2.5rem; color: #4ade80;"></i>
+                    <p style="margin: 0.5rem 0 0 0; font-weight: 600; color: #333;">Payment Successful!</p>
+                </div>
+                
+                <!-- Order Info (Dashed dividers) -->
+                <div style="border-bottom: 1px dashed #ddd; margin-bottom: 1rem; padding-bottom: 0.8rem; font-size: 0.85rem;">
+                    <div id="receiptIdRow" style="display: none; justify-content: space-between; margin-bottom: 0.4rem;">
+                        <span style="color: #666;">Order ID:</span>
+                        <span id="receiptOrderId" style="font-weight: 600;">#0000</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+                        <span style="color: #666;">Date:</span>
+                        <span id="receiptDate"><?php echo date('M d, Y | h:i A'); ?></span>
+                    </div>
+                    <div id="receiptPaymentRow" style="display: none; justify-content: space-between;">
+                        <span style="color: #666;">Payment:</span>
+                        <span id="receiptPayment" style="text-transform: capitalize;">--</span>
                     </div>
                 </div>
-                <div class="payment-option" data-method="wave">
-                    <div class="payment-icon"><i class="fa-solid fa-wallet"></i></div>
-                    <div class="payment-info">
-                        <h4>Wave Money</h4>
-                        <p>Wave Digital Wallet</p>
+
+                <!-- Items List -->
+                <div id="receiptItemsList" style="margin-bottom: 1rem; max-height: 200px; overflow-y: auto;">
+                    <!-- Items will be injected here -->
+                </div>
+
+                <!-- Totals -->
+                <div style="border-top: 1px solid #eee; padding-top: 1rem; margin-top: 1rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span style="font-weight: 600; color: #333;">Total Amount:</span>
+                        <span id="receiptTotal" style="font-weight: 700; color: var(--cozy-green); font-size: 1.1rem;">0 Ks</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #004225;">
+                        <span style="font-weight: 500;">Points Earned:</span>
+                        <span id="receiptPoints" style="font-weight: 600;">+0 Pts</span>
                     </div>
                 </div>
-                <div class="payment-option" data-method="cod">
-                    <div class="payment-icon"><i class="fa-solid fa-truck"></i></div>
-                    <div class="payment-info">
-                        <h4>Cash on Delivery</h4>
-                        <p>Pay when you receive</p>
+
+                <!-- Payment Method Selection (Visible in Step 1) -->
+                <div id="paymentSelectionSection" style="margin-top: 1.5rem; border-top: 1px solid #eee; padding-top: 1.5rem;">
+                    <h4 style="margin: 0 0 1rem 0; font-size: 1rem; color: #333;">Select Payment Method</h4>
+                    <div class="payment-options" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;">
+                        <div class="payment-option" data-method="kpay" style="padding: 0.8rem; border: 1px solid #eee; border-radius: 0.8rem; cursor: pointer; text-align: center; transition: 0.3s;">
+                            <i class="fa-solid fa-mobile-alt" style="font-size: 1.2rem; color: var(--cozy-green); margin-bottom: 0.4rem; display: block;"></i>
+                            <span style="font-size: 0.85rem; font-weight: 600;">KPay</span>
+                        </div>
+                        <div class="payment-option" data-method="wave" style="padding: 0.8rem; border: 1px solid #eee; border-radius: 0.8rem; cursor: pointer; text-align: center; transition: 0.3s;">
+                            <i class="fa-solid fa-wallet" style="font-size: 1.2rem; color: var(--cozy-green); margin-bottom: 0.4rem; display: block;"></i>
+                            <span style="font-size: 0.85rem; font-weight: 600;">Wave</span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="payment-footer">
-            <button class="confirm-payment-btn" id="confirmPaymentBtn" disabled>Confirm Order</button>
+
+            <!-- Footer Actions -->
+            <div style="padding: 1.5rem; padding-top: 0; text-align: center;">
+                <!-- Step 1 Button -->
+                <button id="confirmPaymentBtn" disabled style="width: 100%; padding: 0.9rem; background: var(--cozy-green); color: white; border: none; border-radius: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.3s;">Confirm Order</button>
+                
+                <!-- Step 2 Message & Button (Hidden by default) -->
+                <div id="successStateFooter" style="display: none;">
+                    <p style="margin: 0 0 1.5rem 0; font-size: 0.75rem; color: #999; line-height: 1.4;">
+                        Your order is being prepared. <br> You can track it in your profile history!
+                    </p>
+                    <button id="closeReceiptModal" style="width: 100%; padding: 0.9rem; background: var(--cozy-green); color: white; border: none; border-radius: 0.8rem; font-weight: 600; cursor: pointer;">Awesome, Thanks!</button>
+                </div>
+            </div>
         </div>
     </div>
 
