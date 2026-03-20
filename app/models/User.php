@@ -17,6 +17,8 @@ class User {
         // Name validation
         if (empty($data['name'])) {
             $errors['name'] = "Name is required.";
+        } elseif (!preg_match("/^[a-zA-Z\s]*$/", $data['name'])) {
+            $errors['name'] = "Name must contain only English letters and spaces.";
         }
 
         // Email validation
@@ -25,7 +27,7 @@ class User {
         } elseif (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
             $errors['email'] = "Invalid email format.";
         } elseif ($this->emailExists($data['email'])) {
-            $errors['email'] = "Email already registered.";
+            $errors['email'] = "ဒီ email နဲ့ register လုပ်ထားတာရှိလို့ တခြား email ကိုသုံးပေးပါ။";
         }
 
         // Password validation

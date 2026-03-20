@@ -55,7 +55,7 @@
 
                 <div class="input-group">
                     <label>Name</label>
-                    <input type="text" name="name" placeholder="John Doe" required>
+                    <input type="text" name="name" placeholder="John Doe" pattern="[A-Za-z\s]+" title="Please enter only English letters and spaces" oninput="this.value = this.value.replace(/[^A-Za-z\s]/g, '')" required>
                 </div>
 
                 <div class="input-group">
