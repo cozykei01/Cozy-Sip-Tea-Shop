@@ -1,5 +1,6 @@
 <?php
 session_start();
+date_default_timezone_set('Asia/Yangon');
 require_once '../app/config/database.php';
 require_once '../app/models/Product.php';
 require_once '../app/models/User.php';

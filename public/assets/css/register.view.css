@@ -184,3 +184,52 @@
 .toggle-password:hover {
     color: var(--cozy-green);
 }
+/* Notification Toast */
+.notification-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    z-index: 9999;
+    width: 90%;
+    max-width: 400px;
+    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.notification-container.active {
+    transform: translateX(-50%) translateY(0);
+}
+
+.notification-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    background: white;
+    border-left: 5px solid #ccc;
+    font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+.notification-box.error {
+    background-color: #fff5f5;
+    border-left-color: #dc2626;
+    color: #991b1b;
+}
+
+.notification-box.success {
+    background-color: #f0fdf4;
+    border-left-color: #22c55e;
+    color: #166534;
+}
+
+.notification-icon {
+    font-size: 1.2rem;
+}
+
+.notification-message {
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+

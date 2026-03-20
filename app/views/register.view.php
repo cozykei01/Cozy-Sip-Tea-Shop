@@ -12,6 +12,13 @@
 
 <body class="register-page">
 
+    <div class="notification-container" id="notificationContainer">
+        <div class="notification-box" id="notificationBox">
+            <span class="notification-icon" id="notificationIcon"></span>
+            <span class="notification-message" id="notificationMessage"></span>
+        </div>
+    </div>
+
     <div class="register-wrapper">
 
         <div class="register-info-side">
@@ -31,27 +38,50 @@
                 <p class="form-subtext">Create your account to start ordering</p>
 
                 <?php 
-                if (isset($_SESSION['errors'])): ?>
-                    <div class="error-messages" style="background: #fee2e2; color: #dc2626; padding: 0.8rem; border-radius: 0.5rem; margin-bottom: 1rem; font-size: 0.9rem;">
-                        <?php foreach ($_SESSION['errors'] as $error): ?>
-                            <p><i class="fa-solid fa-circle-exclamation"></i> <?php echo $error; ?></p>
-                        <?php endforeach; ?>
-                        <?php unset($_SESSION['errors']); ?>
-                    </div>
-                <?php endif; ?>
+                $session_error = null;
+                if (isset($_SESSION['errors'])) {
+                    $session_error = implode(" ", $_SESSION['errors']);
+                    unset($_SESSION['errors']);
+                }
 
-                <?php if (isset($_SESSION['success'])): ?>
-                    <div class="success-message" id="successMsg" style="background: #dcfce7; border: 1px solid #22c55e; color: #15803d; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 1rem; font-size: 0.875rem;">
-                        <p><i class="fa-solid fa-circle-check"></i> <?php echo $_SESSION['success']; ?></p>
-                        <p style="font-size: 0.75rem; margin-top: 0.25rem;">Redirecting to home in 3 seconds...</p>
-                        <?php unset($_SESSION['success']); ?>
-                    </div>
-                    <script>
-                        setTimeout(function() {
-                            window.location.href = "index.php?page=home";
-                        }, 3000);
-                    </script>
-                <?php endif; ?>
+                $session_success = null;
+                if (isset($_SESSION['success'])) {
+                    $session_success = $_SESSION['success'];
+                    unset($_SESSION['success']);
+                }
+                ?>
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const container = document.getElementById('notificationContainer');
+                        const box = document.getElementById('notificationBox');
+                        const icon = document.getElementById('notificationIcon');
+                        const message = document.getElementById('notificationMessage');
+
+                        function showNotification(msg, type) {
+                            message.textContent = msg;
+                            box.className = 'notification-box ' + type;
+                            icon.innerHTML = type === 'success' ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-circle-exclamation"></i>';
+                            
+                            container.classList.add('active');
+                            
+                            setTimeout(() => {
+                                container.classList.remove('active');
+                            }, 5000);
+                        }
+
+                        <?php if ($session_error): ?>
+                            showNotification("<?php echo addslashes($session_error); ?>", 'error');
+                        <?php endif; ?>
+
+                        <?php if ($session_success): ?>
+                            showNotification("<?php echo addslashes($session_success); ?>", 'success');
+                            setTimeout(function() {
+                                window.location.href = "index.php?page=home";
+                            }, 3000);
+                        <?php endif; ?>
+                    });
+                </script>
 
                 <div class="input-group">
                     <label>Name</label>
