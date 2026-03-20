@@ -27,14 +27,14 @@ class User {
         } elseif (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
             $errors['email'] = "Invalid email format.";
         } elseif ($this->emailExists($data['email'])) {
-            $errors['email'] = "ဒီ email နဲ့ register လုပ်ထားတာရှိလို့ တခြား email ကိုသုံးပေးပါ။";
+            $errors['email'] = "This email is already registered. Please use another email.";
         }
 
         // Password validation
         if (empty($data['password'])) {
             $errors['password'] = "Password is required.";
-        } elseif (strlen($data['password']) < 6) {
-            $errors['password'] = "Password must be at least 6 characters.";
+        } elseif (strlen($data['password']) < 9) {
+            $errors['password'] = "Password must be at least 9 characters.";
         }
 
         if ($data['password'] !== $data['confirm_password']) {

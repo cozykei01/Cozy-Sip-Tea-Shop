@@ -66,7 +66,7 @@
                 <div class="input-group">
                     <label>Password</label>
                     <div class="password-wrapper">
-                        <input type="password" name="password" id="password" placeholder="Password" required>
+                        <input type="password" name="password" id="password" placeholder="Password" minlength="9" required>
                         <i class="fa-solid fa-eye-slash toggle-password" onclick="togglePassword('password', this)"></i>
                     </div>
                 </div>
@@ -74,7 +74,7 @@
                 <div class="input-group">
                     <label>Confirm Password</label>
                     <div class="password-wrapper">
-                        <input type="password" name="confirm_password" id="confirm_password" placeholder="Confirm Password" required>
+                        <input type="password" name="confirm_password" id="confirm_password" placeholder="Confirm Password" minlength="9" required>
                         <i class="fa-solid fa-eye-slash toggle-password" onclick="togglePassword('confirm_password', this)"></i>
                     </div>
                 </div>
