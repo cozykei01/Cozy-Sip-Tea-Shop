@@ -115,8 +115,6 @@ function renderCart() {
             </div>
         `;
         cartTotalPriceElement.textContent = '0 Ks';
-        const oldPointsEl = document.getElementById('cartTotalPoints');
-        if (oldPointsEl) oldPointsEl.remove();
         return;
     }
 
